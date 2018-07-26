@@ -1,0 +1,91 @@
+:root {
+    --myblue: #BAE1FF;
+    --myred: #FFB3BA;
+    --myyellow: #FFE7AE;
+    --mygreen: #B9E29B;
+    --myorange: #FFB27D
+}
+
+* {
+    font-family: helvetica;
+}
+
+html {
+    height: 100%;
+    background-color: var(--myblue)
+}
+
+body {
+    height: 100%;
+    margin: 0;
+}
+
+a:link, a:visited {
+    text-decoration: underlined;
+    color: black;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+#header {
+    text-align: center;
+    background: url("img/name-01.svg");
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+#header img {
+    width: 100%;
+    display: block;
+}
+
+#navbar {
+    width: 100%;
+    overflow: hidden;
+}
+
+#navbar a {
+    float: left;
+    text-align: center;
+    min-width: 25%;
+    padding: 12px 0;
+    transition: all 0.3s ease;
+    background-color: var(--myyellow);
+    color: black;
+    font-weight: bold;
+    font-size: 100%;
+    text-decoration: none;
+}
+
+#navbar a:hover {
+    background-color: var(--myred);
+}
+
+#footer {
+    text-align: center;
+}
+
+.content {
+    text-align: justify;
+    padding: 16px;
+}
+
+.sticky {
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+.sticky + .content {
+    padding-top: 60px;
+}
+
+:target:before {
+    content: "";
+    display: block;
+    height: 30px;
+    margin: -30px 0 0;
+}
