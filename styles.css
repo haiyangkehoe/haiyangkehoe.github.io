@@ -3,7 +3,9 @@
     --myred: #FFB3BA;
     --myyellow: #FFE7AE;
     --mygreen: #B9E29B;
-    --myorange: #FFB27D
+    --myorange: #FFB27D;
+    --mydarkblue: #94b4cc;
+    --mygray: #AAAAAA;
 }
 
 * {
@@ -18,15 +20,21 @@ body {
     background-color: var(--myblue);
     height: 100%;
     margin: 0;
+    transition: 0.5s all;
+}
+
+.changeColor {
+    background-color: black;
 }
 
 a:link, a:visited {
-    text-decoration: underlined;
     color: black;
+    font-weight: bold;
+    text-decoration: none;
 }
 
 a:hover {
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 #header {
@@ -50,7 +58,7 @@ a:hover {
 #navbar a {
     float: left;
     text-align: center;
-    min-width: 25%;
+    min-width: 20%;
     padding: 12px 0;
     transition: all 0.3s ease;
     background-color: var(--myyellow);
@@ -60,7 +68,7 @@ a:hover {
     text-decoration: none;
 }
 
-#navbar a:hover {
+#navbar a:hover, .active {
     background-color: var(--myred);
 }
 
@@ -69,6 +77,7 @@ a:hover {
 }
 
 .content {
+    background-color: var(--myyellow);
     text-align: justify;
     padding: 16px;
 }
