@@ -1,95 +1,101 @@
 :root {
-    --myblue: #BAE1FF;
-    --myred: #FFB3BA;
-    --myyellow: #FFE7AE;
-    --mygreen: #B9E29B;
-    --myorange: #FFB27D;
-    --mydarkblue: #94b4cc;
-    --mygray: #AAAAAA;
+  --myblue: #BAE1FF;
+  --myred: #FFB3BA;
+  --myyellow: #FFE7AE;
+  --mygreen: #B9E29B;
+  --myorange: #FFB27D;
+  --mydarkblue: #94b4cc;
 }
 
 * {
-    font-family: helvetica;
+  font-family: helvetica;
 }
 
 html {
-    height: 100%;
-}
-
-body {
-    background-color: var(--myblue);
-    height: 100%;
-    margin: 0;
-    transition: 0.5s all;
-}
-
-.changeColor {
-    background-color: black;
+  height: 100%;
 }
 
 a:link, a:visited {
-    color: black;
-    font-weight: bold;
-    text-decoration: none;
+  color: black;
+  font-weight: bold;
+  text-decoration: none;
 }
 
 a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
-#header {
-    text-align: center;
-    background: url("img/name-01.svg");
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-size: 100%;
+header {
+  text-align: center;
+  background: url("img/name-01.svg");
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: 100%;
 }
 
-#header img {
-    width: 100%;
-    display: block;
+header img {
+  width: 100%;
+  display: black;
+  vertical-align: bottom;
 }
 
-#navbar {
-    width: 100%;
-    overflow: hidden;
+nav {
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--myyellow);
 }
 
-#navbar a {
-    float: left;
-    text-align: center;
-    min-width: 20%;
-    padding: 12px 0;
-    transition: all 0.3s ease;
-    background-color: var(--myyellow);
-    color: black;
-    font-weight: bold;
-    font-size: 100%;
-    text-decoration: none;
+nav a {
+  float: left;
+  text-align: center;
+  min-width: 20%;
+  padding: 12px 0;
+  transition: all 0.3s ease;
+  background-color: var(--myyellow);
+  color: black;
+  font-weight: bold;
+  font-size: 100%;
+  text-decoration: none;
 }
 
-#navbar a:hover, .active {
-    background-color: var(--myred);
+nav a:hover {
+  background-color: var(--myred);
+  text-decoration: none;
 }
 
-#footer {
-    text-align: center;
+body {
+  background-color: var(--myblue);
+  height: 100%;
+  margin: 0;
+  transition: 0.5s all;
+}
+
+footer {
+  text-align: center;
+}
+
+.active {
+  background-color: var(--myred);
 }
 
 .content {
-    background-color: var(--myyellow);
-    text-align: justify;
-    padding: 16px;
+  background-color: var(--myyellow);
+  text-align: justify;
+  padding: 16px;
+}
+
+.changeColor {
+  background-color: black;
 }
 
 .sticky {
-    position: fixed;
-    top: 0;
-    width: 100%;
+  position: fixed;
+  top: 0;
+  width: 100%;
 }
 
 .sticky + .content {
-    padding-top: 60px;
+  padding-top: 60px;
 }
 
 *[id]:before { 
@@ -98,4 +104,10 @@ a:hover {
   margin-top: -30px; 
   height: 30px; 
   visibility: hidden; 
+}
+
+@media screen and (max-width: 700px) {
+  nav a {
+    display: none;
+  }
 }

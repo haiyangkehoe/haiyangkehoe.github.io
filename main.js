@@ -1,11 +1,14 @@
+//Refresh on resize
+window.onresize = function() {
+  location.reload()
+}
+
 window.onscroll = function() {
   stickyNav(); //Sticky navbar
   scrollColor(); //Change background color
-  navScroll(); //Highlight navbar section on scroll
 }
-
 //Sticky navbar
-var navbar = document.getElementById("navbar");
+var navbar = document.querySelector("nav");
 var sticky = navbar.offsetTop;
 function stickyNav() {
   if (window.pageYOffset >= sticky) {
@@ -16,7 +19,7 @@ function stickyNav() {
 }
      
 //Change background color
-var header = document.getElementById("header");
+var header = document.querySelector("header");
 var position = 0.4 * header.offsetHeight;
 function scrollColor() {
   if (window.pageYOffset >= position) {
@@ -25,17 +28,3 @@ function scrollColor() {
     document.body.classList.remove("changeColor");
   }
 }
-
-//Highlight navbar section on scroll
-var aboutme = document.getElementById("aboutme");
-var projects = document.getElementById("projects");
-var cv = document.getElementById("cv");
-var contact = document.getElementById("contact");
-function navScroll() {
-  if (window.pageYOffset >= aboutme) {
-    navbar.classList.add("active");
-  }
-}
-
-//Refresh on resize
-window.onresize = function() {location.reload()};
