@@ -49,8 +49,10 @@ nav a {
   float: left;
   text-align: center;
   min-width: 20%;
-  padding: 12px 0;
-  transition: all 0.3s ease;
+  display: inline-block;
+  padding: 10px 0;
+  border-bottom: 3px solid transparent;
+  transition: 0.2s all;
   background-color: var(--myyellow);
   color: black;
   font-weight: bold;
@@ -59,7 +61,7 @@ nav a {
 }
 
 nav a:hover {
-  background-color: var(--myred);
+  border-bottom: 3px solid var(--myred);
   text-decoration: none;
 }
 
@@ -92,6 +94,11 @@ footer {
   position: fixed;
   top: 0;
   width: 100%;
+}
+
+.sticky a {
+  border-bottom: 3px solid black;
+  transition: 0.2s all;
 }
 
 .sticky + .content {
