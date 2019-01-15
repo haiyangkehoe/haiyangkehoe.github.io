@@ -52,7 +52,7 @@ nav a {
   display: inline-block;
   padding: 10px 0;
   border-bottom: 3px solid transparent;
-  transition: 0.2s all;
+  transition: 0.3s all;
   background-color: var(--myyellow);
   color: black;
   font-weight: bold;
@@ -60,9 +60,22 @@ nav a {
   text-decoration: none;
 }
 
-nav a:hover {
+nav a:hover, nav.sticky a:hover {
   border-bottom: 3px solid var(--myred);
   text-decoration: none;
+  font-weight: bold;
+}
+
+nav.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  opacity: 0.9;
+}
+
+nav.sticky a {
+  border-bottom: 3px solid black;
+  transition: 0.3s all;
 }
 
 body {
@@ -90,17 +103,6 @@ footer {
   background-color: black;
 }
 
-.sticky {
-  position: fixed;
-  top: 0;
-  width: 100%;
-}
-
-.sticky a {
-  border-bottom: 3px solid black;
-  transition: 0.2s all;
-}
-
 .sticky + .content {
   padding-top: 60px;
 }
@@ -116,5 +118,8 @@ footer {
 @media screen and (max-width: 700px) {
   nav a {
     display: none;
+  }
+  .sticky + .content {
+    padding-top: 15px;
   }
 }
