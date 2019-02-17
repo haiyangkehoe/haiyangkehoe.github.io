@@ -1,8 +1,3 @@
-//Refresh on resize
-window.onresize = function() {
-  location.reload()
-}
-
 window.onscroll = function() {
   stickyNav(); //Sticky navbar
   scrollColor(); //Change background color
@@ -20,11 +15,16 @@ function stickyNav() {
      
 //Change background color
 var header = document.querySelector("header");
-var position = 0.4 * header.offsetHeight;
+var position = 0.44 * header.offsetHeight;
 function scrollColor() {
   if (window.pageYOffset >= position) {
     document.body.classList.add("changeColor");
   } else {
     document.body.classList.remove("changeColor");
   }
+}
+
+//Refresh on resize
+window.onresize = function() {
+  location.reload()
 }
