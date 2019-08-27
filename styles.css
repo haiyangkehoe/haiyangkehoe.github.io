@@ -93,6 +93,32 @@ footer {
   background-color: var(--myred);
 }
 
+.button {
+  border: none;
+  color: white;
+  padding: 10px 30px;
+  text-align: center;
+  text-decoration: none;
+  font-weight: bold;
+  display: inline-block;
+  font-size: 100%;
+  margin: 4px 2px;
+  -webkit-transition-duration: 0.3s; /* Safari */
+  transition-duration: 0.3s;
+  cursor: pointer;
+}
+
+.button1 {
+  background-color: var(--myyellow); 
+  color: black; 
+  border: 3px solid black;
+}
+
+.button1:hover {
+  background-color: var(--myred);
+  color: black;
+}
+
 .content {
   background-color: var(--myyellow);
   text-align: justify;
