@@ -124,7 +124,7 @@ p {
 .content {
   background-color: var(--myyellow);
   text-align: justify;
-  padding: 16px 64px;
+  padding: 16px 5%;
 }
 
 .changeColor {
