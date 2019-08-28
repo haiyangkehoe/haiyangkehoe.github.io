@@ -25,6 +25,17 @@ a:hover {
   text-decoration: underline;
 }
 
+body {
+  background-color: var(--myblue);
+  height: 100%;
+  margin: 0;
+  transition: 0.5s all;
+}
+
+footer {
+  text-align: center;
+}
+
 header {
   text-align: center;
   background: url("img/name-01.svg");
@@ -37,6 +48,10 @@ header img {
   width: 100%;
   display: black;
   vertical-align: bottom;
+}
+
+h2 {
+  text-align: center;
 }
 
 nav {
@@ -78,15 +93,8 @@ nav.sticky a {
   transition: 0.3s all;
 }
 
-body {
-  background-color: var(--myblue);
-  height: 100%;
-  margin: 0;
-  transition: 0.5s all;
-}
-
-footer {
-  text-align: center;
+p {
+  line-height: 150%;
 }
 
 .active {
@@ -94,15 +102,9 @@ footer {
 }
 
 .button {
-  border: none;
-  color: white;
   padding: 10px 30px;
-  text-align: center;
-  text-decoration: none;
   font-weight: bold;
-  display: inline-block;
   font-size: 100%;
-  margin: 4px 2px;
   -webkit-transition-duration: 0.3s; /* Safari */
   transition-duration: 0.3s;
   cursor: pointer;
@@ -122,7 +124,7 @@ footer {
 .content {
   background-color: var(--myyellow);
   text-align: justify;
-  padding: 16px;
+  padding: 16px 64px;
 }
 
 .changeColor {
@@ -147,5 +149,9 @@ footer {
   }
   .sticky + .content {
     padding-top: 15px;
+  }
+  .button1:hover {
+    background-color: inherit;
+    color: inherit;
   }
 }
