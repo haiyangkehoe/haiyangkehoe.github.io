@@ -1,12 +1,7 @@
 //Execute stickyNav and scrollColor on scroll
 var navbar = document.querySelector("nav")
 var header = document.querySelector("header");
-var sticky = header.offsetHeight;
-var position = 0.44 * header.offsetHeight;
-window.addEventListener('resize', function() {
-  sticky = header.offsetHeight;
-  position = 0.44 * header.offsetHeight;
-})
+
 window.onscroll = function() {
   stickyNav(); //Sticky navbar
   scrollColor(); //Change background color
@@ -14,7 +9,7 @@ window.onscroll = function() {
 
 //Sticky navbar
 function stickyNav() {
-  if (window.pageYOffset >= sticky) {
+  if (window.pageYOffset >= header.offsetHeight) {
     navbar.classList.add("sticky");
   } else {
     navbar.classList.remove("sticky");
@@ -23,7 +18,7 @@ function stickyNav() {
 
 //Change background color
 function scrollColor() {
-  if (window.pageYOffset >= position) {
+  if (window.pageYOffset >= 0.44 * header.offsetHeight) {
     document.body.classList.add("changeColor");
   } else {
     document.body.classList.remove("changeColor");
