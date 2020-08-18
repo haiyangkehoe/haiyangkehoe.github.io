@@ -25,14 +25,11 @@ a:hover {
   text-decoration: underline;
 }
 
-body {
-  background-color: var(--myblue);
-  height: 100%;
-  margin: 0;
-  transition: 0.5s all;
+p {
+  line-height: 150%;
 }
 
-footer {
+h2 {
   text-align: center;
 }
 
@@ -46,28 +43,24 @@ header {
 
 header img {
   width: 100%;
-  display: black;
   vertical-align: bottom;
-}
-
-h2 {
-  text-align: center;
 }
 
 nav {
   width: 100%;
+  z-index: 1;
   overflow: hidden;
   background-color: var(--myyellow);
+  text-align: center;
 }
 
 nav a {
-  float: left;
-  text-align: center;
-  min-width: 20%;
   display: inline-block;
+  text-align: center;
+  min-width: 15%;
   padding: 10px 0;
-  border-bottom: 3px solid transparent;
-  transition: 0.3s all;
+  border-bottom: 3px solid black;
+  transition: 0.5s all;
   background-color: var(--myyellow);
   color: black;
   font-weight: bold;
@@ -77,8 +70,8 @@ nav a {
 
 nav a:hover, nav.sticky a:hover {
   border-bottom: 3px solid var(--myred);
+  transition: 0.3s all;
   text-decoration: none;
-  font-weight: bold;
 }
 
 nav.sticky {
@@ -86,19 +79,118 @@ nav.sticky {
   top: 0;
   width: 100%;
   opacity: 0.9;
+  box-shadow: inset 0px -3px 0px 0px black;
 }
 
 nav.sticky a {
-  border-bottom: 3px solid black;
+  min-width: 20%;
+  transition: 0.5s all;
+}
+
+body {
+  background-color: var(--myblue);
+  height: 100%;
+  margin: 0;
+  transition: 0.5s all;
+}
+
+footer {
+  text-align: center;
+}
+
+#aboutme, #publications, #cv {
+  width: 684px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.headshot {
+  background: url("img/haiyang.jpg");
+  float: left;
+  width: 200px;
+  height: 200px;
+  background-position: 0% 10%;
+  background-size: 150%;
+  border-radius: 50%;
+  position: relative;
+}
+
+.aboutmetext p {
+  margin-left: 240px;
+}
+
+.social {
+  width: 200px;
+  position: absolute;
+  bottom: -40px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.mail {
+  background: url("img/mail-01.svg");
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   transition: 0.3s all;
 }
 
-p {
-  line-height: 150%;
+.mail:hover {
+  cursor: pointer;
+  background-color: var(--myred);
+  transition: 0.3s all;
 }
 
-.active {
+.scholar {
+  background: url("img/scholar-01.svg");
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: 0.3s all;
+}
+
+.scholar:hover {
+  cursor: pointer;
   background-color: var(--myred);
+  transition: 0.3s all;
+}
+
+.twitter {
+  background: url("img/twitter-01.svg");
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: 0.3s all;
+}
+
+.twitter:hover {
+  cursor: pointer;
+  background-color: var(--myred);
+  transition: 0.3s all;
+}
+
+.github {
+  background: url("img/github-01.svg");
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: 0.3s all;
+}
+
+.github:hover {
+  cursor: pointer;
+  background-color: var(--myred);
+  transition: 0.3s all;
+}
+
+.pubs {
+  padding-left: 40px;
+  text-indent: -40px;
 }
 
 .button {
@@ -124,7 +216,7 @@ p {
 .content {
   background-color: var(--myyellow);
   text-align: justify;
-  padding: 16px 5%;
+  padding: 16px;
 }
 
 .changeColor {
@@ -147,11 +239,22 @@ p {
   nav a {
     display: none;
   }
+  #aboutme, #publications, #cv {
+    width: 100%
+  }
+  .headshot { 
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 56px;
+  }
+  .aboutmetext p {
+    margin-left: 0;
+  }
+  .column {
+    width: 100%;
+  }
   .sticky + .content {
     padding-top: 15px;
-  }
-  .button1:hover {
-    background-color: inherit;
-    color: inherit;
   }
 }
