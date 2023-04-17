@@ -107,8 +107,8 @@ footer {
 .headshot {
   background: url("img/haiyang.jpg");
   float: left;
-  width: 150px;
-  height: 150px;
+  width: 175px;
+  height: 175px;
   background-position: 0% 10%;
   background-size: 150%;
   border-radius: 50%;
@@ -120,7 +120,7 @@ footer {
 }
 
 .social {
-  width: 150px;
+  width: 175px;
   position: absolute;
   bottom: -40px;
   margin-left: auto;
