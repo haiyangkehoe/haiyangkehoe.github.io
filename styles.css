@@ -105,12 +105,12 @@ footer {
 }
 
 .headshot {
-  background: url("img/haiyang.jpg");
+  background: url("img/haiyang.jpeg");
   float: left;
   width: 175px;
   height: 175px;
-  background-position: 0% 10%;
-  background-size: 150%;
+  background-position: 0% 50%;
+  background-size: 100%;
   border-radius: 50%;
   position: relative;
 }
