@@ -119,6 +119,10 @@ footer {
   margin-left: 220px;
 }
 
+.infotext p {
+  margin-left: 0;
+}
+
 .social {
   width: 175px;
   position: absolute;
