@@ -104,6 +104,25 @@ footer {
   margin-right: auto;
 }
 
+#toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 0.7em 1em;
+  border-radius: 40px;
+  font-size: 0.9em;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+#toast.hide {
+  opacity: 0;
+}
+
 .headshot {
   background: url("img/haiyang.jpg");
   float: left;
