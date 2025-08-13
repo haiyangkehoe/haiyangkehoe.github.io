@@ -111,9 +111,9 @@ footer {
   transform: translateX(-50%);
   background: rgba(0,0,0,0.9);
   color: white;
-  padding: 0.7em 1em;
+  padding: 10px 20px;
   border-radius: 40px;
-  font-size: 0.9em;
+  font-size: 90%;
   text-align: center;
   opacity: 1;
   transition: opacity 0.5s ease;
@@ -217,6 +217,7 @@ footer {
 }
 
 .button {
+  border-radius: 40px;
   padding: 10px 30px;
   font-weight: bold;
   font-size: 100%;
