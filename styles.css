@@ -138,8 +138,12 @@ footer {
   margin-left: 220px;
 }
 
-.infotext p {
-  margin-left: 0;
+.title {
+  width: 175px;
+  position: absolute;
+  bottom: -115px;
+  text-align: center;
+  font-size: 75%;
 }
 
 .social {
@@ -274,7 +278,7 @@ footer {
     float: none;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 56px;
+    margin-bottom: 115px;
   }
   .aboutmetext p {
     margin-left: 0;
