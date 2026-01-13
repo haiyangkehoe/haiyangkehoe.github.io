@@ -270,7 +270,7 @@ footer {
   visibility: hidden; 
 }
 
-@media screen and (max-width: 750px) {
+@media screen and (max-width: 710px) {
   nav a {
     display: none;
   }
