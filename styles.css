@@ -123,35 +123,38 @@ footer {
   opacity: 0;
 }
 
-.headshot {
-  background: url("img/haiyang.jpg");
+.headshot-wrap {
+  width: 230px;
   float: left;
-  width: 175px;
-  height: 175px;
-  background-position: 0% 50%;
-  background-size: 100%;
-  border-radius: 50%;
+  text-align: center;
   position: relative;
 }
 
+.headshot {
+  width: 160px;
+  height: 160px;
+  background: url("img/haiyang.jpg") no-repeat;
+  background-position: 50% 50%;
+  background-size: 100%;
+  border-radius: 50%;
+  display: inline-block;
+}
+
 .aboutmetext p {
-  margin-left: 220px;
+  margin-left: 260px;
 }
 
 .title {
-  width: 175px;
   position: absolute;
-  bottom: -115px;
+  bottom: -132px;
+  width: 100%;
   text-align: center;
-  font-size: 75%;
 }
 
 .social {
-  width: 175px;
   position: absolute;
   bottom: -40px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
   text-align: center;
 }
 
@@ -267,18 +270,19 @@ footer {
   visibility: hidden; 
 }
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 750px) {
   nav a {
     display: none;
   }
   #aboutme, #publications, #cv {
     width: 100%
   }
-  .headshot { 
+  .headshot-wrap {
     float: none;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 115px;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 132px;
+    position: relative;
   }
   .aboutmetext p {
     margin-left: 0;
