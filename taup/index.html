@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TauP</title>
+    <title>TauP Phase Calculator</title>
 
     <!-- Apply the saved (or system) theme before first paint to avoid a flash -->
     <script>
@@ -33,7 +33,7 @@
         --accent-text: var(--myred);      /* accent used as text on the page background */
         --on-accent: #2b0a0e;             /* text placed on top of the accent */
         --err: #ff7b72;
-        --fig-bg: #000;
+        --fig-bg: var(--bg);              /* figures sit on the page background */
         color-scheme: dark;
       }
 
@@ -47,12 +47,16 @@
         --accent-text: var(--myred);
         --on-accent: #2b0a0e;
         --err: #cf222e;
-        --fig-bg: #fff;
         color-scheme: light;
       }
 
       * {
         box-sizing: border-box;
+      }
+
+      /* Elements below set their own display, which would otherwise beat [hidden] */
+      [hidden] {
+        display: none !important;
       }
 
       body {
@@ -114,6 +118,11 @@
         align-items: end;
       }
 
+      /* Lets a group of fields take part in the form's grid */
+      .fields {
+        display: contents;
+      }
+
       label {
         display: flex;
         flex-direction: column;
@@ -142,6 +151,89 @@
       .wide {
         grid-column: 1 / -1;
       }
+
+      .hint {
+        margin: -6px 0 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      /* ----- Mode switch (segmented control) ----- */
+
+      fieldset.mode {
+        border: 0;
+        margin: 0;
+        padding: 0;
+        min-width: 0;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      .seg {
+        display: inline-flex;
+        gap: 3px;
+        padding: 3px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        max-width: 100%;
+      }
+
+      .seg label {
+        position: relative;
+        flex-direction: row;
+        gap: 0;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .seg input {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        opacity: 0;
+        cursor: pointer;
+        appearance: none;
+      }
+
+      .seg span {
+        padding: 8px 16px;
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+
+      .seg label:hover span {
+        color: var(--text);
+      }
+
+      .seg input:checked + span {
+        background: var(--accent);
+        color: var(--on-accent);
+        font-weight: 600;
+      }
+
+      .seg input:focus-visible + span {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .blurb {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      /* ----- Buttons ----- */
 
       button {
         background: var(--accent);
@@ -173,6 +265,8 @@
         border-color: var(--accent);
       }
 
+      /* ----- Results ----- */
+
       table {
         width: 100%;
         border-collapse: collapse;
@@ -195,10 +289,24 @@
         color: var(--muted);
         font-weight: 500;
         font-size: 13px;
+        white-space: nowrap;
       }
 
+      /* Range tables can be long: scroll inside the card, keep the header visible */
       .scroll {
-        overflow-x: auto;
+        overflow: auto;
+        max-height: 440px;
+      }
+
+      .scroll th {
+        position: sticky;
+        top: 0;
+        background: var(--panel);
+        box-shadow: 0 1px 0 var(--border);
+      }
+
+      tr.group-start td {
+        border-top: 2px solid var(--border);
       }
 
       pre {
@@ -214,13 +322,31 @@
         gap: 16px;
       }
 
-      .figs img {
-        width: 100%;
+      .figs figure {
+        margin: 0;
+      }
+
+      .figs figcaption {
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      /* Figures are inline SVG: their text and axes use currentColor and their
+         legend uses --fig-bg, so switching theme is pure CSS (no recompute). */
+      .fig {
         aspect-ratio: 1 / 1;      /* every figure gets the same square box */
-        object-fit: contain;      /* ...without stretching the image */
+        color: var(--text);
+        background: var(--fig-bg);
         border-radius: 8px;
         border: 1px solid var(--border);
-        background: var(--fig-bg);
+        transition: background 0.2s, color 0.2s;
+      }
+
+      .fig svg {
+        display: block;
+        width: 100%;
+        height: 100%;             /* the viewBox keeps the proportions */
       }
 
       .err {
@@ -229,6 +355,12 @@
 
       .muted {
         color: var(--muted);
+      }
+
+      footer {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 8px;
       }
 
       @media (max-width: 480px) {
@@ -245,12 +377,17 @@
         <div>
           <h1>TauP Phase Calculator</h1>
           <div class="sub">
-            Seismic phase arrival times and ray paths, computed in Python with ObsPy's
+            Seismic phase arrival times and ray paths, computed on your device with ObsPy's
             <a
               href="https://docs.obspy.org/packages/autogen/obspy.taup.tau.TauPyModel.html#obspy.taup.tau.TauPyModel"
               target="_blank"
               rel="noopener noreferrer"
-            ><code>TauPyModel</code></a>.
+            ><code>TauPyModel</code></a>. This site runs entirely in your browser (Python via Pyodide) and nothing you enter is sent to a server. This site contains a modified subset of
+            <a
+              href="https://github.com/obspy/obspy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >ObsPy</a> 1.5.1 (LGPL-3.0).
           </div>
         </div>
         <button id="theme-toggle" type="button" aria-label="Toggle light and dark mode"></button>
@@ -258,6 +395,21 @@
 
       <div class="card">
         <form id="form">
+          <fieldset class="mode wide">
+            <legend class="visually-hidden">What do you want to calculate?</legend>
+            <div class="seg">
+              <label>
+                <input type="radio" name="mode" value="single" checked>
+                <span>Single distance</span>
+              </label>
+              <label>
+                <input type="radio" name="mode" value="range">
+                <span>Range of distances</span>
+              </label>
+            </div>
+            <p class="blurb" id="mode-blurb"></p>
+          </fieldset>
+
           <label>
             Velocity model
             <select id="model">
@@ -272,50 +424,63 @@
             <input id="depth" type="number" min="0" step="any" value="100" required>
           </label>
 
-          <label>
-            Distance (degrees)
-            <input id="dist" type="number" min="0" max="180" step="any" value="150" required>
-          </label>
+          <!-- Single distance -->
+          <div class="fields" data-for="single">
+            <label>
+              Distance (degrees)
+              <input id="dist" type="number" min="0" max="180" step="any" value="150" required>
+            </label>
+          </div>
+
+          <!-- Range of distances -->
+          <div class="fields" data-for="range" hidden>
+            <label>
+              From (degrees)
+              <input id="dmin" type="number" min="0" max="360" step="any" value="30" required disabled>
+            </label>
+
+            <label>
+              To (degrees)
+              <input id="dmax" type="number" min="0" max="360" step="any" value="150" required disabled>
+            </label>
+
+            <label>
+              Number of distances
+              <input id="dn" type="number" min="1" max="360" step="1" value="10" required disabled>
+            </label>
+
+            <p class="hint wide" id="range-hint"></p>
+          </div>
 
           <label class="wide">
             Phase list (comma-separated)
-            <input id="phases" type="text" value="P, PcP, Pdiff, PKP, PKJKP" required>
+            <input id="phases" type="text" value="P, S, Pdiff, PKP, PKJKP" required>
           </label>
 
           <div>
-            <button id="go" type="submit">Compute</button>
+            <button id="go" type="submit" disabled>Compute</button>
           </div>
         </form>
       </div>
 
-      <div id="status" class="muted"></div>
+      <div id="status" class="muted" role="status" aria-live="polite"></div>
 
       <div id="results" hidden>
         <div class="card">
-          <h2>Arrivals</h2>
+          <h2 id="arrivals-title">Arrivals</h2>
           <div class="scroll">
             <table>
               <thead>
-                <tr>
-                  <th>Phase</th>
-                  <th>Time (s)</th>
-                  <th>Time (min)</th>
-                  <th>Ray param (s/°)</th>
-                  <th>Takeoff (°)</th>
-                  <th>Incident (°)</th>
-                  <th>Distance (°)</th>
-                </tr>
+                <tr id="thead-row"></tr>
               </thead>
               <tbody id="rows"></tbody>
             </table>
           </div>
-          <div id="none" class="muted" hidden>
-            No arrivals found for these phases at this distance and depth.
-          </div>
+          <div id="none" class="muted" hidden></div>
         </div>
 
         <!--
-        <div class="card">
+        <div class="card" id="raw-card">
           <h2>Raw output</h2>
           <pre id="raw"></pre>
         </div>
@@ -326,18 +491,29 @@
           <div class="figs" id="figs"></div>
         </div>
       </div>
+
+      <footer>
+        <p>&#169; <script>document.write(new Date().getFullYear())</script></p>
+      </footer>
     </main>
+
+    <!-- Pyodide: Python compiled to WebAssembly. Change the version here. -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
 
     <script>
       const $ = (id) => document.getElementById(id);
       const root = document.documentElement;
-      let hasResults = false;
+      let taup = null;              // the Python module, once loaded
 
-      // Where the Python backend lives. Empty means "same site" (Flask serves
-      // this page itself). On seismolo.gy the page is static, so point at Render.
-      const API_BASE = ["seismolo.gy", "www.seismolo.gy"].includes(location.hostname)
-        ? "https://haiyangkehoe-github-io.onrender.com"
-        : "";
+      // Folder this page lives in (works for /taup, /taup/ and /taup/index.html)
+      const BASE = (() => {
+        let p = location.pathname;
+        const last = p.split("/").pop();
+        p = p.endsWith("/") || /\.[a-z0-9]+$/i.test(last)
+          ? p.replace(/[^/]*$/, "")
+          : p + "/";
+        return location.origin + p;
+      })();
 
       /* ---------- Theme ---------- */
 
@@ -356,12 +532,106 @@
         root.setAttribute("data-theme", next);
         try { localStorage.setItem("taup-theme", next); } catch (e) {}
         updateToggleLabel();
-
-        // Figures are rendered by the backend in the active theme, so redraw them
-        if (hasResults) compute();
+        // Nothing to recompute: the figures follow the page's CSS colours.
       });
 
       updateToggleLabel();
+
+      /* ---------- Mode: single distance or range of distances ---------- */
+
+      const BLURBS = {
+        single: "Phases and travel times at one distance, with the ray paths and the travel-time curves.",
+        range: "Ray paths to evenly spaced distances across a range, with the travel-time curves and a table of arrivals at every distance.",
+      };
+
+      let mode = "single";
+      const last = { single: null, range: null };   // each mode keeps its own latest result
+
+      // Trim to at most 2 decimals: 10.2857 -> "10.29", 120 -> "120"
+      const fmt = (x) => String(Math.round(x * 100) / 100);
+
+      function setMode(next) {
+        mode = next;
+        document.querySelectorAll("[data-for]").forEach((group) => {
+          const on = group.dataset.for === mode;
+          group.hidden = !on;
+          // disabled fields are skipped by the browser's form validation
+          group.querySelectorAll("input").forEach((input) => { input.disabled = !on; });
+        });
+        $("mode-blurb").textContent = BLURBS[mode];
+        setStatus("");
+        if (last[mode]) render(last[mode]);
+        else $("results").hidden = true;
+        updateRangeHint();
+      }
+
+      document.querySelectorAll('input[name="mode"]').forEach((radio) => {
+        radio.addEventListener("change", () => { if (radio.checked) setMode(radio.value); });
+      });
+
+      function updateRangeHint() {
+        const lo = parseFloat($("dmin").value);
+        const hi = parseFloat($("dmax").value);
+        const n = parseInt($("dn").value, 10);
+        let text = "";
+        if (Number.isFinite(lo) && Number.isFinite(hi) && Number.isInteger(n) && n >= 1) {
+          if (n === 1) text = "1 distance, at " + fmt(lo) + "°.";
+          else if (hi > lo) {
+            text = n + " distances from " + fmt(lo) + "° to " + fmt(hi) + "° (both ends included), every "
+              + fmt((hi - lo) / (n - 1)) + "°.";
+          }
+        }
+        $("range-hint").textContent = text;
+      }
+
+      ["dmin", "dmax", "dn"].forEach((id) => $(id).addEventListener("input", updateRangeHint));
+
+      /* ---------- Load Python (once per visit; the browser caches the files) ---------- */
+
+      function setStatus(text, isError) {
+        const status = $("status");
+        status.className = isError ? "err" : "muted";
+        status.textContent = text;
+      }
+
+      async function loadPython() {
+        try {
+          if (typeof loadPyodide !== "function") {
+            throw new Error("Could not load Pyodide from the CDN. Check your connection.");
+          }
+
+          setStatus("Starting Python… (first visit takes a while, then it is cached)");
+          const pyodide = await loadPyodide();
+
+          setStatus("Loading numpy, scipy and matplotlib…");
+          await pyodide.loadPackage(["numpy", "scipy", "matplotlib", "micropip"]);
+
+          setStatus("Installing small helper packages…");
+          const micropip = pyodide.pyimport("micropip");
+          await micropip.install(["decorator", "defusedxml"]);
+
+          setStatus("Unpacking ObsPy…");
+          const [zipRes, pyRes] = await Promise.all([
+            fetch(BASE + "py/taup_bundle.zip"),
+            fetch(BASE + "py/taup_run.py"),
+          ]);
+          if (!zipRes.ok || !pyRes.ok) {
+            throw new Error("Could not fetch py/taup_bundle.zip or py/taup_run.py next to this page.");
+          }
+          pyodide.unpackArchive(await zipRes.arrayBuffer(), "zip", { extractDir: "/pkg" });
+          pyodide.FS.writeFile("/pkg/taup_run.py", await pyRes.text());
+          pyodide.runPython("import sys; sys.path.insert(0, '/pkg')");
+
+          setStatus("Preparing the velocity models…");
+          taup = pyodide.pyimport("taup_run");
+
+          $("go").disabled = false;
+          setStatus("");
+          await compute();          // show a result straight away with the default inputs
+        } catch (err) {
+          setStatus("Could not start Python: " + (err.message || err), true);
+        }
+      }
 
       /* ---------- Compute ---------- */
 
@@ -370,40 +640,48 @@
         compute();
       });
 
+      function readParams() {
+        if (mode === "single") {
+          return { distance: parseFloat($("dist").value) };
+        }
+        return {
+          min: parseFloat($("dmin").value),
+          max: parseFloat($("dmax").value),
+          n: parseInt($("dn").value, 10),
+        };
+      }
+
       async function compute() {
+        if (!taup) return;
         const btn = $("go");
-        const status = $("status");
+        const runMode = mode;          // the user could switch tabs while Python is busy
+        const params = readParams();
 
         btn.disabled = true;
-        status.className = "muted";
-        status.textContent = "Computing…";
+        setStatus("Computing…");
+        // let the browser paint the message before Python takes over the thread
+        await new Promise((resolve) => setTimeout(resolve, 30));
 
-        const body = {
-          model: $("model").value,
-          source_depth_in_km: parseFloat($("depth").value),
-          distance_in_degree: parseFloat($("dist").value),
-          phase_list: $("phases").value
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-          theme: currentTheme(),
-        };
+        const phases = $("phases").value
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
 
         try {
-          const res = await fetch(API_BASE + "/api/taup", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || res.statusText);
+          const out = JSON.parse(taup.compute(
+            runMode,
+            $("model").value,
+            parseFloat($("depth").value),
+            JSON.stringify(phases),
+            JSON.stringify(params)
+          ));
+          if (out.error) throw new Error(out.error);
 
-          render(data);
-          hasResults = true;
-          status.textContent = "";
+          last[runMode] = { out, params };
+          if (runMode === mode) render(last[runMode]);
+          setStatus("");
         } catch (err) {
-          status.className = "err";
-          status.textContent = "Error: " + err.message;
+          setStatus("Error: " + (err.message || err), true);
         } finally {
           btn.disabled = false;
         }
@@ -411,55 +689,130 @@
 
       /* ---------- Render ---------- */
 
-      function render({ arrivals, arrivals_text, figures }) {
-        // The raw-output card is optional: skip it if it was removed or commented out
-        const raw = $("raw");
-        if (raw) raw.textContent = arrivals_text || "";
+      const COLUMNS = [
+        ["Phase", "phase"],
+        ["Time (s)", "time"],
+        ["Time (min)", "time_min"],
+        ["Ray param (s/°)", "ray_param"],
+        ["Takeoff (°)", "takeoff"],
+        ["Incident (°)", "incident"],
+        ["Ray path (°)", "path"],
+      ];
+
+      const PATH_TIP = "Angle the ray actually travels. It can be 360° minus the distance, "
+        + "when the phase reaches you the long way round.";
+
+      function cellValues(a) {
+        return [
+          a.phase,
+          a.time.toFixed(2),
+          (a.time / 60).toFixed(2),
+          a.ray_param.toFixed(3),
+          a.takeoff.toFixed(2),
+          a.incident.toFixed(2),
+          a.path.toFixed(2),
+        ];
+      }
+
+      function render({ out, params }) {
+        const isRange = out.mode === "range";
+        const { arrivals, arrivals_text, figures } = out;
+
+        /* Arrivals table */
+        $("arrivals-title").textContent = isRange
+          ? "Arrivals at " + out.distances.length + " distance" + (out.distances.length === 1 ? "" : "s")
+          : "Arrivals at " + fmt(params.distance) + "°";
+
+        const head = $("thead-row");
+        head.innerHTML = "";
+        const heads = (isRange ? [["Distance (°)", "distance"]] : []).concat(COLUMNS);
+        heads.forEach(([label, key]) => {
+          const th = document.createElement("th");
+          th.textContent = label;
+          if (key === "path") th.title = PATH_TIP;
+          head.appendChild(th);
+        });
+        // The distance column leads, so the phase column is no longer first
+        head.firstElementChild.style.textAlign = "left";
 
         const rows = $("rows");
         rows.innerHTML = "";
+        let previous = null;
         arrivals.forEach((a) => {
           const tr = document.createElement("tr");
-          const cells = [
-            a.phase,
-            a.time.toFixed(2),
-            (a.time / 60).toFixed(2),
-            a.ray_param.toFixed(3),
-            a.takeoff.toFixed(2),
-            a.incident.toFixed(2),
-            a.distance.toFixed(2),
-          ];
-          cells.forEach((c) => {
+          const cells = cellValues(a);
+          if (isRange) {
+            cells.unshift(a.distance.toFixed(2));
+            if (previous !== null && a.distance !== previous) tr.className = "group-start";
+            previous = a.distance;
+          }
+          cells.forEach((c, i) => {
             const td = document.createElement("td");
             td.textContent = c;
+            if (isRange && i === 1) td.style.textAlign = "right";
             tr.appendChild(td);
           });
           rows.appendChild(tr);
         });
-        $("none").hidden = arrivals.length > 0;
+
+        const none = $("none");
+        none.hidden = arrivals.length > 0;
+        none.textContent = isRange
+          ? "No arrivals found for these phases at these distances and this depth."
+          : "No arrivals found for these phases at this distance and depth.";
+
+        /* Raw output: only for a single distance. Optional card (may be removed) */
+        const rawCard = $("raw-card");
+        if (rawCard) {
+          rawCard.hidden = !arrivals_text;
+          $("raw").textContent = arrivals_text || "";
+        }
+
+        /* Figures */
+        let rayTitle, timeTitle;
+        if (isRange) {
+          const shown = params.min < 180
+            ? "shaded: " + fmt(params.min) + "° to " + fmt(Math.min(params.max, 180)) + "°"
+            : "your range is beyond 180°, so nothing is shaded";
+          rayTitle = "Ray paths from " + fmt(params.min) + "° to " + fmt(params.max) + "°";
+          timeTitle = "Travel-time curves (" + shown + ")";
+        } else {
+          rayTitle = "Ray paths at " + fmt(params.distance) + "°";
+          timeTitle = "Travel-time curves (dashed line: " + fmt(params.distance) + "°)";
+        }
 
         const figs = $("figs");
         figs.innerHTML = "";
-        [
-          ["rays_at_distance", "Ray paths at the chosen distance"],
-          //["rays_all", "Ray paths over all distances"],
-          ["times", "Travel-time curves"],
-        ].forEach(([key, title]) => {
+        [["rays", rayTitle], ["times", timeTitle]].forEach(([key, title]) => {
+          const figure = document.createElement("figure");
+          const caption = document.createElement("figcaption");
+          caption.textContent = title;
+          figure.appendChild(caption);
+
           if (figures[key]) {
-            const img = new Image();
-            img.src = "data:image/png;base64," + figures[key];
-            img.alt = title;
-            figs.appendChild(img);
+            const box = document.createElement("div");
+            box.className = "fig";
+            box.setAttribute("role", "img");
+            box.setAttribute("aria-label", title);
+            box.innerHTML = figures[key];       // SVG generated by our own Python
+            const svg = box.querySelector("svg");
+            svg.removeAttribute("width");       // let CSS size it; the viewBox stays
+            svg.removeAttribute("height");
+            figure.appendChild(box);
           } else if (figures[key + "_error"]) {
             const p = document.createElement("p");
             p.className = "err";
-            p.textContent = title + ": " + figures[key + "_error"];
-            figs.appendChild(p);
+            p.textContent = figures[key + "_error"];
+            figure.appendChild(p);
           }
+          figs.appendChild(figure);
         });
 
         $("results").hidden = false;
       }
+
+      setMode("single");
+      loadPython();
     </script>
   </body>
 </html>
