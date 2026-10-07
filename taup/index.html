@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TauP Calculator</title>
+    <title>TauP</title>
 
     <!-- Apply the saved (or system) theme before first paint to avoid a flash -->
     <script>
@@ -243,7 +243,7 @@
     <main>
       <header>
         <div>
-          <h1>TauP Calculator</h1>
+          <h1>TauP Phase Calculator</h1>
           <div class="sub">
             Seismic phase arrival times and ray paths, computed in Python with ObsPy's
             <a
@@ -274,12 +274,12 @@
 
           <label>
             Distance (degrees)
-            <input id="dist" type="number" min="0" max="180" step="any" value="120" required>
+            <input id="dist" type="number" min="0" max="180" step="any" value="150" required>
           </label>
 
           <label class="wide">
             Phase list (comma-separated)
-            <input id="phases" type="text" value="P, PcP, Pdiff, PKIKP" required>
+            <input id="phases" type="text" value="P, PcP, Pdiff, PKP, PKJKP" required>
           </label>
 
           <div>
@@ -333,6 +333,12 @@
       const root = document.documentElement;
       let hasResults = false;
 
+      // Where the Python backend lives. Empty means "same site" (Flask serves
+      // this page itself). On seismolo.gy the page is static, so point at Render.
+      const API_BASE = ["seismolo.gy", "www.seismolo.gy"].includes(location.hostname)
+        ? "https://haiyangkehoe-github-io.onrender.com"
+        : "";
+
       /* ---------- Theme ---------- */
 
       function currentTheme() {
@@ -384,7 +390,7 @@
         };
 
         try {
-          const res = await fetch("/api/taup", {
+          const res = await fetch(API_BASE + "/api/taup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),

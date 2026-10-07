@@ -3,10 +3,11 @@
 Run from the project root:
     pip install flask obspy matplotlib
     python backend/taup_app.py
-Then open http://localhost:5000
+Then open http://localhost:5001
 """
 import base64
 import io
+import os
 import threading
 from pathlib import Path
 
@@ -15,12 +16,25 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from flask import Flask, jsonify, request, send_file
+
+try:
+    from flask_cors import CORS
+except ImportError:  # only needed when the page is hosted on a different domain
+    CORS = None
 from obspy.taup import TauPyModel
 from obspy.taup.tau import plot_ray_paths, plot_travel_times
 
 ROOT = Path(__file__).resolve().parent.parent  # folder containing taup.html
 
 app = Flask(__name__)
+
+# Let the page hosted on seismolo.gy call this API from the browser
+if CORS is not None:
+    CORS(app, resources={r"/api/*": {"origins": [
+        "https://seismolo.gy",
+        "https://www.seismolo.gy",
+    ]}})
+
 _models = {}
 _plot_lock = threading.Lock()  # pyplot is not thread-safe
 
@@ -91,7 +105,11 @@ def fig_travel_times(model_name, depth, dist, phases):
 
 @app.route("/")
 def index():
-    return send_file(ROOT / "taup.html")
+    # The page is either taup/index.html (as hosted on seismolo.gy) or taup.html
+    for page in (ROOT / "taup" / "index.html", ROOT / "taup.html"):
+        if page.exists():
+            return send_file(page)
+    return "Could not find taup/index.html or taup.html next to the backend folder.", 404
 
 
 @app.route("/api/taup", methods=["POST"])
@@ -129,8 +147,8 @@ def taup():
         builders = {
             "rays_at_distance": lambda: fig_rays_at_distance(
                 model_name, source_depth_in_km, distance_in_degree, phase_list),
-            "rays_all": lambda: fig_rays_all(
-                model_name, source_depth_in_km, phase_list),
+#            "rays_all": lambda: fig_rays_all(
+#                model_name, source_depth_in_km, phase_list),
             "times": lambda: fig_travel_times(
                 model_name, source_depth_in_km, distance_in_degree, phase_list),
         }
@@ -153,4 +171,7 @@ def taup():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # Local testing. Port 5001 because macOS uses 5000 for AirPlay Receiver.
+    port = int(os.environ.get("PORT", 5001))
+    print(f"Open http://localhost:{port}")
+    app.run(debug=True, port=port)
