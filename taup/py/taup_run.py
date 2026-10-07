@@ -92,6 +92,8 @@ def _travel_times(model, depth, phases, lo, hi, is_range):
                             model=model, ax=ax, fig=fig, show=False)
     fig = getattr(res, "figure", res)  # an Axes in current ObsPy
     for a in fig.axes:
+        for line in a.lines:
+            line.set_linewidth(2.5)
         if is_range:
             if lo < 180:
                 a.axvspan(lo, min(hi, 180), color=MUTED, alpha=0.2, lw=0)

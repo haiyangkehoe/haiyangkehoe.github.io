@@ -375,6 +375,7 @@
     <main>
       <header>
         <div>
+          <button id="theme-toggle" type="button" aria-label="Toggle light and dark mode"></button>
           <h1>TauP Phase Calculator</h1>
           <div class="sub">
             Seismic phase arrival times and ray paths, computed on your device with ObsPy's
@@ -390,7 +391,6 @@
             >ObsPy</a> 1.5.1 (LGPL-3.0).
           </div>
         </div>
-        <button id="theme-toggle" type="button" aria-label="Toggle light and dark mode"></button>
       </header>
 
       <div class="card">
@@ -446,7 +446,7 @@
 
             <label>
               Number of distances
-              <input id="dn" type="number" min="1" max="360" step="1" value="10" required disabled>
+              <input id="dn" type="number" min="1" max="100" step="1" value="10" required disabled>
             </label>
 
             <p class="hint wide" id="range-hint"></p>
@@ -524,7 +524,7 @@
       function updateToggleLabel() {
         // Label names the mode you will switch to
         $("theme-toggle").textContent =
-          currentTheme() === "dark" ? "☀ Light mode" : "☾ Dark mode";
+          currentTheme() === "dark" ? "Light mode" : "Dark mode";
       }
 
       $("theme-toggle").addEventListener("click", () => {
@@ -540,8 +540,8 @@
       /* ---------- Mode: single distance or range of distances ---------- */
 
       const BLURBS = {
-        single: "Phases and travel times at one distance, with the ray paths and the travel-time curves.",
-        range: "Ray paths to evenly spaced distances across a range, with the travel-time curves and a table of arrivals at every distance.",
+        single: "Ray paths and travel times at one distance.",
+        range: "Ray paths and travel times to evenly spaced distances across a range.",
       };
 
       let mode = "single";
@@ -577,8 +577,8 @@
         if (Number.isFinite(lo) && Number.isFinite(hi) && Number.isInteger(n) && n >= 1) {
           if (n === 1) text = "1 distance, at " + fmt(lo) + "°.";
           else if (hi > lo) {
-            text = n + " distances from " + fmt(lo) + "° to " + fmt(hi) + "° (both ends included), every "
-              + fmt((hi - lo) / (n - 1)) + "°.";
+            text = n + " distances from " + fmt(lo) + "° to " + fmt(hi) + "° (every "
+              + fmt((hi - lo) / (n - 1)) + "°).";
           }
         }
         $("range-hint").textContent = text;
