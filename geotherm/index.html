@@ -795,8 +795,8 @@
               <input id="period" type="number" min="0" step="any" value="1" required>
               <select id="unit" aria-label="Period unit">
                 <option value="hour">hours</option>
-                <option value="day">days</option>
-                <option value="year" selected>years</option>
+                <option value="day" selected>days</option>
+                <option value="year">years</option>
                 <option value="kyr">kyr</option>
               </select>
             </div>
@@ -888,7 +888,7 @@
 
       <!-- ============ Readouts ============ -->
       <div class="card">
-        <h2>Key numbers for these settings</h2>
+        <h2>Stats</h2>
         <div class="stats" id="stats"></div>
       </div>
 
@@ -915,7 +915,7 @@
 
       <!-- ============ Teaching text ============ -->
       <div class="card prose">
-        <h2>Things to try</h2>
+        <h2>Questions</h2>
         <ol>
           <li>
             <b>Daily vs annual.</b> With &kappa; fixed, switch between Daily and Annual. By what factor
@@ -970,7 +970,7 @@
       <div class="card">
         <h2>The model</h2>
         <details>
-          <summary>Equation, symbols and assumptions</summary>
+          <summary>Equation, symbols, and assumptions</summary>
           <p>
             The ground is a uniform half-space (depth <i>z</i> downward) whose surface temperature oscillates
             as a sine wave. Once any start-up transient has died away, the temperature is the steady
@@ -1065,7 +1065,7 @@
         /* ---------- State ---------- */
 
         const state = {
-          P: YEAR,          // period, s
+          P: 86400,          // period, s
           A: 10,            // amplitude, deg C
           T0: 10,           // mean surface temperature, deg C
           G: 25,            // gradient, deg C / km
@@ -1572,7 +1572,7 @@
 
         /* ---------- Start ---------- */
 
-        setPreset("annual");
+        setPreset("daily");
         syncProbeSlider();
         $("play").textContent = state.playing ? "Pause" : "Play";
         readInputs();
