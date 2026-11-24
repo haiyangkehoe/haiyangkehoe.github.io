@@ -1,0 +1,1583 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Geotherm under Periodic Surface Heating</title>
+
+    <!-- Apply the saved (or system) theme before first paint to avoid a flash.
+         Uses the same storage key as the TauPy page, so the choice carries over. -->
+    <script>
+      (function () {
+        var theme = null;
+        try { theme = localStorage.getItem("taup-theme"); } catch (e) {}
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
+
+    <style>
+      :root {
+        --myred: #FFB3BA;
+
+        /* Dark theme (default) */
+        --bg: #0d1117;
+        --panel: #161b22;
+        --border: #30363d;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --accent: var(--myred);
+        --accent-text: var(--myred);      /* accent used as text on the page background */
+        --on-accent: #2b0a0e;             /* text placed on top of the accent */
+        --err: #ff7b72;
+        --fig-bg: var(--bg);              /* figures sit on the page background */
+
+        /* Figure line colours */
+        --c-cur: #FFB3BA;                 /* profile at the chosen time */
+        --c-probe: #79c0ff;               /* probe depth */
+        --c-p1: #7ee787;                  /* pinned profiles */
+        --c-p2: #d2a8ff;
+        --c-p3: #ffa657;
+        --c-p4: #f2cc60;
+        color-scheme: dark;
+      }
+
+      :root[data-theme="light"] {
+        --bg: #f6f8fa;
+        --panel: #ffffff;
+        --border: #d0d7de;
+        --text: #1f2328;
+        --muted: #59636e;
+        --accent: var(--myred);
+        --accent-text: var(--myred);
+        --on-accent: #2b0a0e;
+        --err: #cf222e;
+
+        --c-cur: #d1344a;
+        --c-probe: #0969da;
+        --c-p1: #1a7f37;
+        --c-p2: #8250df;
+        --c-p3: #bc4c00;
+        --c-p4: #9a6700;
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      /* Elements below set their own display, which would otherwise beat [hidden] */
+      [hidden] {
+        display: none !important;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      main {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 32px 16px 64px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin: 0 0 4px;
+      }
+
+      h2 {
+        font-size: 16px;
+        margin: 0 0 12px;
+      }
+
+      .sub {
+        color: var(--muted);
+      }
+
+      a {
+        color: var(--accent-text);
+      }
+
+      code {
+        color: var(--accent-text);
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        align-items: end;
+      }
+
+      /* A superscript must not make its line taller (it would push the field below it down) */
+      sup {
+        line-height: 0;
+      }
+
+      label,
+      .field > label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      input,
+      select {
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 9px 10px;
+        font: inherit;
+        min-width: 0;
+      }
+
+      /* One height and text size for every field, so selects and inputs line up */
+      input:not([type="range"]):not([type="checkbox"]),
+      select {
+        height: 40px;
+        font-size: 14px;
+      }
+
+      input.bad {
+        border-color: var(--err);
+      }
+
+      input:focus,
+      select:focus,
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+      }
+
+      /* Sliders are styled by hand so they look the same in both themes */
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        width: 100%;
+        height: 24px;
+        margin: 2px 0 0;
+        cursor: pointer;
+      }
+
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--border);
+      }
+
+      input[type="range"]::-moz-range-track {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--border);
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        margin-top: -6px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 2px solid var(--muted);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 2px solid var(--muted);
+      }
+
+      input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        padding: 0;
+        accent-color: var(--accent);
+        flex-shrink: 0;
+      }
+
+      .check {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        color: var(--text);
+      }
+
+      #form {
+        align-items: start;
+      }
+
+      .pair {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 6.5em;
+        gap: 8px;
+      }
+
+      .wide {
+        grid-column: 1 / -1;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      #form-msg {
+        margin: 0;
+        font-size: 13px;
+        color: var(--err);
+      }
+
+      /* ----- Preset switch (segmented control) ----- */
+
+      fieldset.mode {
+        border: 0;
+        margin: 0;
+        padding: 0;
+        min-width: 0;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      .seg {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 3px;
+        padding: 3px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        max-width: 100%;
+      }
+
+      .seg label {
+        position: relative;
+        flex-direction: row;
+        gap: 0;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .seg input {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        opacity: 0;
+        cursor: pointer;
+        appearance: none;
+      }
+
+      .seg span {
+        padding: 8px 16px;
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+
+      .seg label:hover span {
+        color: var(--text);
+      }
+
+      .seg input:checked + span {
+        background: var(--accent);
+        color: var(--on-accent);
+        font-weight: 600;
+      }
+
+      .seg input:focus-visible + span {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .blurb {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      /* ----- Buttons ----- */
+
+      button {
+        background: var(--accent);
+        color: var(--on-accent);
+        border: 0;
+        border-radius: 6px;
+        padding: 10px 18px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      button.secondary,
+      #theme-toggle {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+        font-weight: 500;
+        padding: 7px 12px;
+        white-space: nowrap;
+      }
+
+      #theme-toggle {
+        flex-shrink: 0;
+      }
+
+      button.secondary:hover,
+      #theme-toggle:hover {
+        border-color: var(--accent);
+      }
+
+      /* ----- Explore controls ----- */
+
+      .controls {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px 24px;
+        align-items: end;
+        margin-bottom: 16px;
+      }
+
+      .controls .btns {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .slider .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .slider .val {
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+      }
+
+      #play {
+        min-width: 84px;
+      }
+
+      /* ----- Results ----- */
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-variant-numeric: tabular-nums;
+      }
+
+      th,
+      td {
+        text-align: right;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+
+      th {
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      tr.current td {
+        color: var(--c-cur);              /* darker rose in light mode, readable on white */
+        font-weight: 600;
+      }
+
+      .scroll {
+        overflow-x: auto;
+      }
+
+      .figs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 16px;
+      }
+
+      .figs figure {
+        margin: 0;
+        min-width: 0;
+      }
+
+      .figs figcaption {
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      /* Figures are inline SVG whose text and axes follow the page's CSS colours,
+         so switching theme needs no recompute. */
+      .fig {
+        aspect-ratio: 1 / 1;      /* every figure gets the same square box */
+        color: var(--text);
+        background: var(--fig-bg);
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        transition: background 0.2s, color 0.2s;
+      }
+
+      .fig svg {
+        display: block;
+        width: 100%;
+        height: 100%;             /* the viewBox keeps the proportions */
+      }
+
+      .fig text {
+        fill: currentColor;
+        font: 15px system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      .fig .small {
+        font-size: 13px;
+      }
+
+      .fig .grid line {
+        stroke: var(--muted);
+        opacity: 0.25;
+      }
+
+      .fig .frame {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.2;
+      }
+
+      .fig .tick {
+        stroke: currentColor;
+        stroke-width: 1.2;
+      }
+
+      .fig .zero {
+        stroke: var(--muted);
+        stroke-dasharray: 5 4;
+        stroke-width: 1.2;
+        fill: none;
+      }
+
+      .fig .env-fill {
+        fill: var(--c-cur);
+        opacity: 0.14;
+        stroke: none;
+      }
+
+      .fig .env-line {
+        fill: none;
+        stroke: var(--c-cur);
+        stroke-width: 1.4;
+        stroke-dasharray: 2 4;
+        opacity: 0.9;
+      }
+
+      .fig .bg-line {
+        fill: none;
+        stroke: var(--muted);
+        stroke-width: 1.8;
+        stroke-dasharray: 7 5;
+      }
+
+      .fig .cur {
+        fill: none;
+        stroke: var(--c-cur);
+        stroke-width: 3;
+        stroke-linejoin: round;
+      }
+
+      .fig .pin {
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linejoin: round;
+      }
+
+      .fig .probe-line {
+        stroke: var(--c-probe);
+        stroke-width: 1.4;
+        stroke-dasharray: 6 4;
+      }
+
+      .fig .probe-dot {
+        fill: var(--c-probe);
+        stroke: var(--fig-bg);
+        stroke-width: 2;
+      }
+
+      .fig .probe-text {
+        fill: var(--c-probe);
+      }
+
+      .fig .surf-curve {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.4;
+        stroke-linejoin: round;
+      }
+
+      .fig .probe-curve {
+        fill: none;
+        stroke: var(--c-probe);
+        stroke-width: 2.4;
+        stroke-linejoin: round;
+      }
+
+      .fig .now-line {
+        stroke: var(--muted);
+        stroke-width: 1.2;
+        stroke-dasharray: 3 4;
+      }
+
+      .fig .now-dot-surf {
+        fill: currentColor;
+        stroke: var(--fig-bg);
+        stroke-width: 2;
+      }
+
+      .fig .lag {
+        stroke: var(--muted);
+        stroke-width: 1.4;
+        fill: none;
+      }
+
+      .fig .lag-drop {
+        stroke: var(--muted);
+        stroke-width: 1;
+        stroke-dasharray: 2 3;
+        fill: none;
+      }
+
+      .fig .peak-surf {
+        fill: currentColor;
+      }
+
+      .fig .peak-probe {
+        fill: var(--c-probe);
+      }
+
+      /* Legends under each figure */
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 16px;
+        margin: 8px 0 0;
+        padding: 0;
+        list-style: none;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .legend .sw {
+        display: inline-block;
+        width: 22px;
+        height: 0;
+        border-top: 3px solid var(--c, currentColor);
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+
+      .legend .sw.dashed {
+        border-top-style: dashed;
+      }
+
+      .legend .sw.band {
+        height: 10px;
+        border: 0;
+        background: var(--c);
+        opacity: 0.3;
+        border-radius: 2px;
+      }
+
+      /* Stat tiles */
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 12px;
+      }
+
+      .stat {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        background: var(--bg);
+      }
+
+      .stat .k {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .stat .v {
+        font-size: 20px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .stat .n {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .stat.probe .v {
+        color: var(--c-probe);
+      }
+
+      /* Text blocks */
+      .prose p,
+      .prose li {
+        color: var(--text);
+      }
+
+      .prose ol {
+        padding-left: 22px;
+        margin: 0;
+      }
+
+      .prose li {
+        margin-bottom: 12px;
+      }
+
+      details {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      summary {
+        cursor: pointer;
+      }
+
+      summary:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .eq {
+        margin: 8px 0 12px;
+        padding: 12px 14px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-family: "Cambria Math", "STIX Two Math", Georgia, "Times New Roman", serif;
+        font-size: 17px;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      ul.plain {
+        margin: 8px 0 0;
+        padding-left: 20px;
+      }
+
+      .err {
+        color: var(--err);
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      footer {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 8px;
+      }
+
+      @media (max-width: 720px) {
+        .controls {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .figs {
+          grid-template-columns: 1fr;
+        }
+
+        th,
+        td {
+          padding: 8px 5px;
+          font-size: 13px;
+          white-space: nowrap;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <header>
+        <div>
+          <button id="theme-toggle" type="button" aria-label="Toggle light and dark mode"></button>
+          <h1>Geotherm under Periodic Surface Heating</h1>
+          <div class="sub">
+            Discover how a cyclic change in surface temperature diffuses into Earth and perturbs 
+            the geothermal gradient. This site runs entirely in your browser (JavaScript) and 
+            nothing you enter is sent to a server.
+          </div>
+        </div>
+      </header>
+
+      <noscript><p class="err">This module needs JavaScript to draw its figures.</p></noscript>
+
+      <!-- ============ Inputs ============ -->
+      <div class="card">
+        <form id="form" novalidate>
+          <fieldset class="mode wide">
+            <legend class="visually-hidden">Which temperature cycle?</legend>
+            <div class="seg">
+              <label><input type="radio" name="preset" value="daily" checked><span>Daily</span></label>
+              <label><input type="radio" name="preset" value="annual"><span>Annual</span></label>
+              <label><input type="radio" name="preset" value="obliq"><span>41 kyr</span></label>
+              <label><input type="radio" name="preset" value="ecc"><span>100 kyr</span></label>
+              <label><input type="radio" name="preset" value="custom"><span>Custom</span></label>
+            </div>
+            <p class="blurb" id="preset-blurb"></p>
+          </fieldset>
+
+          <div class="field">
+            <label for="period">Period of the cycle</label>
+            <div class="pair">
+              <input id="period" type="number" min="0" step="any" value="1" required>
+              <select id="unit" aria-label="Period unit">
+                <option value="hour">hours</option>
+                <option value="day">days</option>
+                <option value="year" selected>years</option>
+                <option value="kyr">kyr</option>
+              </select>
+            </div>
+          </div>
+
+          <label>
+            Amplitude (&deg;C)
+            <input id="amp" type="number" min="0" step="any" value="10" required>
+          </label>
+
+          <label>
+            Mean surface temperature (&deg;C)
+            <input id="t0" type="number" step="any" value="10" required>
+          </label>
+
+          <label>
+            Geothermal gradient (&deg;C/km)
+            <input id="grad" type="number" step="any" value="25" required>
+            <span class="hint">Roughly 20&ndash;30 &deg;C/km in continental crust.</span>
+          </label>
+
+          <label>
+            <span>Thermal diffusivity &kappa; (10<sup>&minus;6</sup> m&sup2;/s)</span>
+            <input id="kappa" type="number" min="0" step="any" value="1" required>
+            <span class="hint">About 0.5&ndash;1.5 for most rocks. Dry soil is lower.</span>
+          </label>
+
+          <label>
+            Plot depth to
+            <select id="range", aria-label="Period unit">
+              <option value="3">3 skin depths</option>
+              <option value="5" selected>5 skin depths</option>
+              <option value="6">6 skin depths</option>
+            </select>
+          </label>
+
+          <label class="check wide">
+            <input id="subtract" type="checkbox">
+            Show only the deviation from the geotherm
+          </label>
+
+          <p id="form-msg" class="wide" role="alert" hidden></p>
+        </form>
+      </div>
+
+      <!-- ============ Figures ============ -->
+      <div class="card">
+        <h2>Explore</h2>
+
+        <div class="controls">
+          <div class="field">
+            <button id="play" type="button">Pause</button>
+          </div>
+
+          <div class="field slider">
+            <label for="phase">
+              <span class="row"><span>Time in the cycle</span><span class="val" id="phase-val"></span></span>
+            </label>
+            <input id="phase" type="range" min="0" max="1000" step="1" value="0">
+          </div>
+
+          <div class="field slider">
+            <label for="probe">
+              <span class="row"><span>Probe depth</span><span class="val" id="probe-val"></span></span>
+            </label>
+            <input id="probe" type="range" min="0" max="1000" step="1" value="200">
+          </div>
+
+          <div class="btns">
+            <button id="pin" type="button" class="secondary">Pin this time</button>
+            <button id="unpin" type="button" class="secondary">Clear pins</button>
+            <span class="hint" style="align-self:center">Pin up to four times to compare profiles.</span>
+          </div>
+        </div>
+
+        <div class="figs">
+          <figure>
+            <figcaption id="cap1">Temperature vs. Depth</figcaption>
+            <div class="fig" id="fig1" role="img"></div>
+            <ul class="legend" id="legend1"></ul>
+          </figure>
+          <figure>
+            <figcaption id="cap2">Temperature change over two cycles</figcaption>
+            <div class="fig" id="fig2" role="img"></div>
+            <ul class="legend" id="legend2"></ul>
+          </figure>
+        </div>
+      </div>
+
+      <!-- ============ Readouts ============ -->
+      <div class="card">
+        <h2>Key numbers for these settings</h2>
+        <div class="stats" id="stats"></div>
+      </div>
+
+      <div class="card">
+        <h2>How deep does each cycle reach? (for this &kappa;)</h2>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Cycle</th>
+                <th>Period</th>
+                <th>Skin depth <i>d</i></th>
+                <th>1% depth</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <p class="hint" style="margin:10px 0 0">
+          At the skin depth <i>d</i> the amplitude has fallen to 37% (1/e) of its surface value.
+          Below the 1% depth (4.6&nbsp;<i>d</i>) it is under 1%.
+        </p>
+      </div>
+
+      <!-- ============ Teaching text ============ -->
+      <div class="card prose">
+        <h2>Things to try</h2>
+        <ol>
+          <li>
+            <b>Daily vs annual.</b> With &kappa; fixed, switch between Daily and Annual. By what factor
+            does the skin depth change? Is it the same factor as the ratio of the periods?
+            <details><summary>Hint</summary>
+              <i>d</i> grows with the square root of the period. A year is about 365 days, so <i>d</i> grows by roughly &radic;365 &asymp; 19.
+            </details>
+          </li>
+          <li>
+            <b>Doubling the period.</b> Choose Custom, then double the period, then quadruple it.
+            What happens to <i>d</i>?
+            <details><summary>Hint</summary>
+              Doubling the period multiplies <i>d</i> by &radic;2 &asymp; 1.41; quadrupling it doubles <i>d</i>.
+            </details>
+          </li>
+          <li>
+            <b>The delayed wave.</b> Move the probe depth to about &pi; skin depths. When the surface is
+            hottest, what is the temperature change at the probe? How big is the cycle there compared with the surface?
+            <details><summary>Hint</summary>
+              At <i>z</i> = &pi;<i>d</i> the wave is half a cycle behind, so the ground is at its coldest
+              when the surface is at its hottest. Only e<sup>&minus;&pi;</sup> &asymp; 4% of the amplitude is left.
+            </details>
+          </li>
+          <li>
+            <b>Does the gradient matter?</b> Change the geothermal gradient. Which of the key numbers
+            change, and which do not? Why?
+            <details><summary>Hint</summary>
+              None of the skin depth, amplitude or lag numbers change. Heat conduction is linear, so the
+              periodic part and the steady geotherm simply add.
+            </details>
+          </li>
+          <li>
+            <b>Where to measure a gradient.</b> Choose Annual with an amplitude of 10 &deg;C. At what depth has the
+            seasonal cycle shrunk below 0.1 &deg;C? Why should a geothermal gradient be measured below that depth?
+            <details><summary>Hint</summary>
+              A&nbsp;e<sup>&minus;<i>z</i>/<i>d</i></sup> = 0.1 &deg;C gives <i>z</i> = <i>d</i>&nbsp;ln(100) &asymp; 4.6&nbsp;<i>d</i>,
+              about 15 m for &kappa; = 10<sup>&minus;6</sup> m&sup2;/s. Above that depth the seasonal wave would
+              distort the measured gradient.
+            </details>
+          </li>
+          <li>
+            <b>Ice-age signals.</b> Choose 100 kyr and tick &ldquo;Show only the deviation.&rdquo; How deep does the signal reach?
+            Compare that with the depth of a typical borehole (hundreds of metres to a couple of kilometres).
+            <details><summary>Hint</summary>
+              <i>d</i> is about 1 km, so the signal is still noticeable at several kilometres. This is why deep
+              borehole temperature profiles can carry a record of past surface temperature.
+            </details>
+          </li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h2>The model</h2>
+        <details>
+          <summary>Equation, symbols and assumptions</summary>
+          <p>
+            The ground is a uniform half-space (depth <i>z</i> downward) whose surface temperature oscillates
+            as a sine wave. Once any start-up transient has died away, the temperature is the steady
+            geotherm plus a damped, delayed wave:
+          </p>
+          <div class="eq">
+            T(<i>z</i>,&thinsp;<i>t</i>) = T<sub>0</sub> + <i>G</i>&thinsp;<i>z</i> + A&thinsp;e<sup>&minus;<i>z</i>/<i>d</i></sup>&thinsp;cos(2&pi;<i>t</i>/<i>P</i> &minus; <i>z</i>/<i>d</i>),
+            &emsp; <i>d</i> = &radic;(&kappa;<i>P</i>/&pi;)
+          </div>
+          <ul class="plain">
+            <li>T<sub>0</sub>: mean surface temperature. <i>G</i>: geothermal gradient. A: surface amplitude. <i>P</i>: period.</li>
+            <li>&kappa;: thermal diffusivity, the ratio of thermal conductivity to volumetric heat capacity.</li>
+            <li><i>d</i>: skin depth. The amplitude falls by a factor of e at depth <i>d</i> and the wave lags the surface by <i>z</i>/<i>d</i> radians, which is (<i>z</i>/<i>d</i>)&thinsp;<i>P</i>/2&pi; in time.</li>
+          </ul>
+          <p>Assumptions:</p>
+          <ul class="plain">
+            <li>Heat moves by conduction only (no groundwater flow, no freezing or thawing) and &kappa; is the same everywhere.</li>
+            <li>The surface temperature is a pure sine wave. Real daily, seasonal and glacial cycles are not, but a real cycle can be built from several sine waves of different periods.</li>
+            <li>The gradient is constant with depth (no radiogenic heat production, no layering).</li>
+            <li>Preset amplitudes are illustrative, not measurements from a particular site. Ground-surface temperature is not the same as air temperature (snow, vegetation and soil moisture all matter).</li>
+          </ul>
+          <p>
+            This is a classical result of heat-conduction theory; see, for example,
+            Turcotte &amp; Schubert, <i>Geodynamics</i>, chapter 4.
+          </p>
+        </details>
+      </div>
+
+      <footer>
+        <p>&#169; <script>document.write(new Date().getFullYear())</script></p>
+      </footer>
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+
+        const $ = (id) => document.getElementById(id);
+        const root = document.documentElement;
+
+        /* ---------- Theme ---------- */
+
+        function currentTheme() {
+          return root.getAttribute("data-theme") === "light" ? "light" : "dark";
+        }
+
+        function updateToggleLabel() {
+          // Label names the mode you will switch to
+          $("theme-toggle").textContent =
+            currentTheme() === "dark" ? "Light mode" : "Dark mode";
+        }
+
+        $("theme-toggle").addEventListener("click", () => {
+          const next = currentTheme() === "dark" ? "light" : "dark";
+          root.setAttribute("data-theme", next);
+          try { localStorage.setItem("taup-theme", next); } catch (e) {}
+          updateToggleLabel();
+          // Nothing to recompute: the figures follow the page's CSS colours.
+        });
+
+        updateToggleLabel();
+
+        /* ---------- Constants and presets ---------- */
+
+        const YEAR = 365.25 * 86400;
+        const UNIT_S = { hour: 3600, day: 86400, year: YEAR, kyr: 1000 * YEAR };
+        const CYCLE_SECONDS = 10;       // playback: one cycle takes this long on screen
+        const PIN_COLOURS = ["var(--c-p1)", "var(--c-p2)", "var(--c-p3)", "var(--c-p4)"];
+
+        const PRESETS = {
+          daily: {
+            value: 1, unit: "day", amp: 10,
+            blurb: "The day–night cycle of surface temperature. Amplitude about ±10 °C (illustrative).",
+          },
+          annual: {
+            value: 1, unit: "year", amp: 10,
+            blurb: "The seasonal cycle of surface temperature at mid-latitudes. Amplitude about ±10 °C (illustrative).",
+          },
+          obliq: {
+            value: 41, unit: "kyr", amp: 2,
+            blurb: "The cycle of surface temperature matching the period of Earth's axial tilt (obliquity). Amplitude about ±2 °C (illustrative).",
+          },
+          ecc: {
+            value: 100, unit: "kyr", amp: 5,
+            blurb: "The glacial–interglacial cycle of surface temperature idealized as a sine wave. Amplitude about ±5 °C (illustrative).",
+          },
+          custom: {
+            blurb: "Custom cycle. Set any period, unit and amplitude in the fields below.",
+          },
+        };
+
+        /* ---------- State ---------- */
+
+        const state = {
+          P: YEAR,          // period, s
+          A: 10,            // amplitude, deg C
+          T0: 10,           // mean surface temperature, deg C
+          G: 25,            // gradient, deg C / km
+          kappa: 1,         // diffusivity, 1e-6 m^2/s
+          rangeD: 5,        // plotted depth, in skin depths
+          subtract: false,
+          phase: 0,         // 0..1 through the cycle
+          pd: 1,            // probe depth, in skin depths
+          pins: [],         // pinned phases
+          playing: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+        };
+
+        /* ---------- Physics ---------- */
+
+        // Everything is derived from the state in one place.
+        function model() {
+          const P = state.P;
+          const kappa = state.kappa * 1e-6;
+          const w = 2 * Math.PI / P;
+          const d = Math.sqrt(kappa * P / Math.PI);       // skin depth, m
+          return {
+            P, w, d,
+            A: state.A,
+            T0: state.T0,
+            G: state.G / 1000,                            // deg C per m
+            zmax: state.rangeD * d,
+          };
+        }
+
+        const bgT = (m, z) => (state.subtract ? 0 : m.T0 + m.G * z);
+        const dev = (m, z, t) => m.A * Math.exp(-z / m.d) * Math.cos(m.w * t - z / m.d);
+        const temp = (m, z, t) => bgT(m, z) + dev(m, z, t);
+
+        /* ---------- Formatting ---------- */
+
+        function fmtNum(x, sig) {
+          sig = sig || 3;
+          if (!Number.isFinite(x)) return "–";
+          if (x === 0) return "0";
+          const a = Math.abs(x);
+          if (a >= 1e7 || a < 1e-3) return x.toExponential(2);
+          return String(+x.toPrecision(sig));
+        }
+
+        function fmtDepth(m) {
+          if (m < 1) return fmtNum(m * 100) + " cm";
+          if (m < 1000) return fmtNum(m) + " m";
+          return fmtNum(m / 1000) + " km";
+        }
+
+        function fmtTime(s) {
+          const a = Math.abs(s);
+          if (a < 120) return fmtNum(s) + " s";
+          if (a < 7200) return fmtNum(s / 60) + " min";
+          if (a < 172800) return fmtNum(s / 3600) + " h";
+          if (a < 2 * YEAR) return fmtNum(s / 86400) + " days";
+          if (a < 2000 * YEAR) return fmtNum(s / YEAR) + " yr";
+          return fmtNum(s / (1000 * YEAR)) + " kyr";
+        }
+
+        // Depth axis unit chosen from the plotted depth
+        function depthUnit(zmax) {
+          if (zmax < 1) return { name: "cm", f: 100 };
+          if (zmax < 1000) return { name: "m", f: 1 };
+          return { name: "km", f: 1 / 1000 };
+        }
+
+        // Time axis unit chosen from the period
+        function timeUnit(P) {
+          if (P < 2 * 86400) return { name: "hours", div: 3600 };
+          if (P < 2 * YEAR) return { name: "days", div: 86400 };
+          if (P < 2000 * YEAR) return { name: "years", div: YEAR };
+          return { name: "kyr", div: 1000 * YEAR };
+        }
+
+        /* ---------- Axis helpers ---------- */
+
+        function niceStep(span, n) {
+          const raw = span / n;
+          const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+          const norm = raw / mag;
+          return (norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10) * mag;
+        }
+
+        function ticksIn(lo, hi, n) {
+          const step = niceStep(hi - lo, n);
+          const out = [];
+          for (let v = Math.ceil(lo / step - 1e-9) * step; v <= hi + step * 1e-9; v += step) {
+            out.push(+v.toFixed(12));
+          }
+          return { ticks: out, step };
+        }
+
+        function niceDomain(lo, hi, n) {
+          if (!(hi - lo > 1e-12)) { lo -= 1; hi += 1; }
+          const pad = (hi - lo) * 0.05;
+          lo -= pad; hi += pad;
+          const step = niceStep(hi - lo, n);
+          return [Math.floor(lo / step) * step, Math.ceil(hi / step) * step];
+        }
+
+        const decimals = (step) => Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
+        const r1 = (x) => (Math.round(x * 10) / 10).toString();
+
+        function line(pts) {
+          let s = "";
+          for (let i = 0; i < pts.length; i++) {
+            s += (i ? "L" : "M") + r1(pts[i][0]) + " " + r1(pts[i][1]);
+          }
+          return s;
+        }
+
+        /* ---------- Figure geometry (shared) ---------- */
+
+        const W = 520, H = 520;
+        const ML = 68, MR = 18, MT = 18, MB = 58;
+        const PW = W - ML - MR, PH = H - MT - MB;
+
+        const SVG_OPEN = '<svg viewBox="0 0 ' + W + " " + H + '" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">';
+
+        // Built by renderAll(); renderFrame() only moves the parts that change
+        let f1 = null, f2 = null;
+
+        function buildFig1(m) {
+          const unit = depthUnit(m.zmax);
+          const N = 160;
+          const zs = [];
+          for (let i = 0; i <= N; i++) zs.push(i * m.zmax / N);
+
+          let lo = Infinity, hi = -Infinity;
+          const upper = [], lower = [], bg = [];
+          zs.forEach((z) => {
+            const b = bgT(m, z), e = m.A * Math.exp(-z / m.d);
+            upper.push(b + e); lower.push(b - e); bg.push(b);
+            lo = Math.min(lo, b - e); hi = Math.max(hi, b + e);
+          });
+          const [x0, x1] = niceDomain(lo, hi, 6);
+          const sx = (v) => ML + (v - x0) / (x1 - x0) * PW;
+          const sy = (z) => MT + z / m.zmax * PH;
+
+          const xt = ticksIn(x0, x1, 6);
+          const yt = ticksIn(0, m.zmax * unit.f, 6);
+          const xd = decimals(xt.step), yd = decimals(yt.step);
+
+          let svg = SVG_OPEN;
+          svg += '<g class="grid">';
+          xt.ticks.forEach((v) => { svg += '<line x1="' + r1(sx(v)) + '" x2="' + r1(sx(v)) + '" y1="' + MT + '" y2="' + (MT + PH) + '"/>'; });
+          yt.ticks.forEach((v) => { const y = sy(v / unit.f); svg += '<line x1="' + ML + '" x2="' + (ML + PW) + '" y1="' + r1(y) + '" y2="' + r1(y) + '"/>'; });
+          svg += "</g>";
+
+          // envelope: shaded band and its two edges
+          const up = zs.map((z, i) => [sx(upper[i]), sy(z)]);
+          const dn = zs.map((z, i) => [sx(lower[i]), sy(z)]);
+          svg += '<path class="env-fill" d="' + line(up) + "L" + line(dn.slice().reverse()).slice(1) + 'Z"/>';
+          svg += '<path class="env-line" d="' + line(up) + '"/>';
+          svg += '<path class="env-line" d="' + line(dn) + '"/>';
+
+          // background geotherm (or the zero line)
+          svg += '<path class="bg-line" d="' + line(zs.map((z, i) => [sx(bg[i]), sy(z)])) + '"/>';
+
+          svg += '<g id="f1-pins"></g>';
+          svg += '<path id="f1-cur" class="cur" d=""/>';
+          svg += '<line id="f1-probe-line" class="probe-line" x1="' + ML + '" x2="' + (ML + PW) + '" y1="0" y2="0"/>';
+          svg += '<circle id="f1-probe-dot" class="probe-dot" r="6" cx="0" cy="0"/>';
+          svg += '<text id="f1-probe-text" class="probe-text small" text-anchor="end" x="' + (ML + PW - 6) + '" y="0"></text>';
+
+          // axes
+          svg += '<rect class="frame" x="' + ML + '" y="' + MT + '" width="' + PW + '" height="' + PH + '"/>';
+          xt.ticks.forEach((v) => {
+            const x = r1(sx(v));
+            svg += '<line class="tick" x1="' + x + '" x2="' + x + '" y1="' + (MT + PH) + '" y2="' + (MT + PH + 5) + '"/>';
+            svg += '<text x="' + x + '" y="' + (MT + PH + 22) + '" text-anchor="middle">' + v.toFixed(xd) + "</text>";
+          });
+          yt.ticks.forEach((v) => {
+            const y = r1(sy(v / unit.f));
+            svg += '<line class="tick" x1="' + (ML - 5) + '" x2="' + ML + '" y1="' + y + '" y2="' + y + '"/>';
+            svg += '<text x="' + (ML - 9) + '" y="' + y + '" text-anchor="end" dominant-baseline="central">' + v.toFixed(yd) + "</text>";
+          });
+          svg += '<text x="' + (ML + PW / 2) + '" y="' + (H - 10) + '" text-anchor="middle">'
+            + (state.subtract ? "Temperature minus geotherm (°C)" : "Temperature (°C)") + "</text>";
+          svg += '<text transform="translate(16 ' + (MT + PH / 2) + ') rotate(-90)" text-anchor="middle">Depth (' + unit.name + ")</text>";
+          svg += "</svg>";
+
+          $("fig1").innerHTML = svg;
+          f1 = { sx, sy, zs, cur: $("f1-cur"), pins: $("f1-pins"), pl: $("f1-probe-line"),
+                 pd: $("f1-probe-dot"), pt: $("f1-probe-text") };
+        }
+
+        function buildFig2(m) {
+          const tu = timeUnit(m.P);
+          const Y = (m.A > 0 ? m.A : 1) * 1.32;
+          const sx = (t) => ML + t / (2 * m.P) * PW;
+          const sy = (v) => MT + (1 - (v + Y) / (2 * Y)) * PH;
+
+          const xt = ticksIn(0, 2 * m.P / tu.div, 8);
+          const yt = ticksIn(-Y, Y, 6);
+          const xd = decimals(xt.step), yd = decimals(yt.step);
+
+          let svg = SVG_OPEN;
+          svg += '<g class="grid">';
+          xt.ticks.forEach((v) => { const x = sx(v * tu.div); svg += '<line x1="' + r1(x) + '" x2="' + r1(x) + '" y1="' + MT + '" y2="' + (MT + PH) + '"/>'; });
+          yt.ticks.forEach((v) => { const y = sy(v); svg += '<line x1="' + ML + '" x2="' + (ML + PW) + '" y1="' + r1(y) + '" y2="' + r1(y) + '"/>'; });
+          svg += "</g>";
+          svg += '<line class="zero" x1="' + ML + '" x2="' + (ML + PW) + '" y1="' + r1(sy(0)) + '" y2="' + r1(sy(0)) + '"/>';
+
+          // the surface curve never changes while the probe moves
+          const pts = [];
+          const N = 400;
+          for (let i = 0; i <= N; i++) { const t = 2 * m.P * i / N; pts.push([sx(t), sy(dev(m, 0, t))]); }
+          svg += '<path class="surf-curve" d="' + line(pts) + '"/>';
+
+          svg += '<path id="f2-probe-curve" class="probe-curve" d=""/>';
+          svg += '<g id="f2-lag"></g>';
+          svg += '<line id="f2-now" class="now-line" y1="' + MT + '" y2="' + (MT + PH) + '" x1="0" x2="0"/>';
+          svg += '<circle id="f2-now-surf" class="now-dot-surf" r="6" cx="0" cy="0"/>';
+          svg += '<circle id="f2-now-probe" class="probe-dot" r="6" cx="0" cy="0"/>';
+
+          svg += '<rect class="frame" x="' + ML + '" y="' + MT + '" width="' + PW + '" height="' + PH + '"/>';
+          xt.ticks.forEach((v) => {
+            const x = r1(sx(v * tu.div));
+            svg += '<line class="tick" x1="' + x + '" x2="' + x + '" y1="' + (MT + PH) + '" y2="' + (MT + PH + 5) + '"/>';
+            svg += '<text x="' + x + '" y="' + (MT + PH + 22) + '" text-anchor="middle">' + v.toFixed(xd) + "</text>";
+          });
+          yt.ticks.forEach((v) => {
+            const y = r1(sy(v));
+            svg += '<line class="tick" x1="' + (ML - 5) + '" x2="' + ML + '" y1="' + y + '" y2="' + y + '"/>';
+            svg += '<text x="' + (ML - 9) + '" y="' + y + '" text-anchor="end" dominant-baseline="central">' + v.toFixed(yd) + "</text>";
+          });
+          svg += '<text x="' + (ML + PW / 2) + '" y="' + (H - 10) + '" text-anchor="middle">Time (' + tu.name + ")</text>";
+          svg += '<text transform="translate(16 ' + (MT + PH / 2) + ') rotate(-90)" text-anchor="middle">Deviation from geotherm (°C)</text>';
+          svg += "</svg>";
+
+          $("fig2").innerHTML = svg;
+          f2 = { sx, sy, Y, tu, N, probe: $("f2-probe-curve"), lag: $("f2-lag"), now: $("f2-now"),
+                 nowS: $("f2-now-surf"), nowP: $("f2-now-probe") };
+        }
+
+        /* ---------- Frame update (cheap; runs every animation frame) ---------- */
+
+        const SVGNS = "http://www.w3.org/2000/svg";
+
+        function profilePath(m, t) {
+          return line(f1.zs.map((z) => [f1.sx(temp(m, z, t)), f1.sy(z)]));
+        }
+
+        function renderFrame() {
+          if (!f1 || !f2) return;
+          const m = model();
+          const t = state.phase * m.P;
+          const zp = state.pd * m.d;
+
+          /* Figure 1 */
+          f1.cur.setAttribute("d", profilePath(m, t));
+          while (f1.pins.firstChild) f1.pins.removeChild(f1.pins.firstChild);
+          state.pins.forEach((ph, i) => {
+            const p = document.createElementNS(SVGNS, "path");
+            p.setAttribute("class", "pin");
+            p.setAttribute("stroke", PIN_COLOURS[i % PIN_COLOURS.length]);
+            p.setAttribute("d", profilePath(m, ph * m.P));
+            f1.pins.appendChild(p);
+          });
+          const yp = f1.sy(zp);
+          f1.pl.setAttribute("y1", r1(yp));
+          f1.pl.setAttribute("y2", r1(yp));
+          f1.pd.setAttribute("cx", r1(f1.sx(temp(m, zp, t))));
+          f1.pd.setAttribute("cy", r1(yp));
+          // keep the label inside the plot: above the line unless that is the top edge
+          f1.pt.setAttribute("y", r1(yp < MT + 18 ? yp + 18 : yp - 8));
+          f1.pt.textContent = "probe at " + fmtDepth(zp);
+
+          /* Figure 2 */
+          const probePts = [];
+          for (let i = 0; i <= f2.N; i++) {
+            const tt = 2 * m.P * i / f2.N;
+            probePts.push([f2.sx(tt), f2.sy(dev(m, zp, tt))]);
+          }
+          f2.probe.setAttribute("d", line(probePts));
+
+          // lag bracket: from the surface's second peak to the probe's next peak
+          const lagT = state.pd / m.w;                 // true delay, s (< one period: pd < 2*pi)
+          const yTop = f2.sy(Math.max(m.A, 1e-9) * 1.14);
+          let g = "";
+          if (state.pd > 0.06 && m.A > 0) {
+            const xa = f2.sx(m.P), xb = f2.sx(m.P + lagT);
+            g += '<circle class="peak-surf" r="4.5" cx="' + r1(xa) + '" cy="' + r1(f2.sy(m.A)) + '"/>';
+            g += '<circle class="peak-probe" r="4.5" cx="' + r1(xb) + '" cy="' + r1(f2.sy(m.A * Math.exp(-state.pd))) + '"/>';
+            g += '<line class="lag-drop" x1="' + r1(xa) + '" x2="' + r1(xa) + '" y1="' + r1(f2.sy(m.A)) + '" y2="' + r1(yTop) + '"/>';
+            g += '<line class="lag-drop" x1="' + r1(xb) + '" x2="' + r1(xb) + '" y1="' + r1(f2.sy(m.A * Math.exp(-state.pd))) + '" y2="' + r1(yTop) + '"/>';
+            g += '<line class="lag" x1="' + r1(xa) + '" x2="' + r1(xb) + '" y1="' + r1(yTop) + '" y2="' + r1(yTop) + '"/>';
+            const anchor = xb + 90 > ML + PW ? "end" : "start";
+            const tx = anchor === "end" ? xa - 6 : xb + 6;
+            g += '<text class="small" x="' + r1(tx) + '" y="' + r1(yTop + 4) + '" text-anchor="' + anchor + '">lag ' + fmtTime(lagT) + "</text>";
+          }
+          f2.lag.innerHTML = g;
+
+          const xn = f2.sx(t);
+          f2.now.setAttribute("x1", r1(xn));
+          f2.now.setAttribute("x2", r1(xn));
+          f2.nowS.setAttribute("cx", r1(xn));
+          f2.nowS.setAttribute("cy", r1(f2.sy(dev(m, 0, t))));
+          f2.nowP.setAttribute("cx", r1(xn));
+          f2.nowP.setAttribute("cy", r1(f2.sy(dev(m, zp, t))));
+
+          /* Slider labels */
+          $("phase-val").textContent = fmtTime(t) + " (" + Math.round(state.phase * 100) + "% of a cycle)";
+          const sd = fmtNum(state.pd, 2);
+          $("probe-val").textContent = fmtDepth(zp) + " (" + sd + (sd === "1" ? " skin depth)" : " skin depths)");
+          $("phase").setAttribute("aria-valuetext", $("phase-val").textContent);
+          $("probe").setAttribute("aria-valuetext", $("probe-val").textContent);
+        }
+
+        /* ---------- Readouts, table, legends (run on parameter or probe changes) ---------- */
+
+        function renderLegends() {
+          const bgLabel = state.subtract ? "Geotherm (zero line)" : "Geotherm";
+          let l1 = '<li><span class="sw" style="--c:var(--c-cur)"></span>Profile at the chosen time</li>'
+            + '<li><span class="sw band" style="--c:var(--c-cur)"></span>Range reached over a full cycle</li>'
+            + '<li><span class="sw dashed" style="--c:var(--muted)"></span>' + bgLabel + "</li>"
+            + '<li><span class="sw dashed" style="--c:var(--c-probe)"></span>Probe depth</li>';
+          state.pins.forEach((ph, i) => {
+            l1 += '<li><span class="sw" style="--c:' + PIN_COLOURS[i % PIN_COLOURS.length] + '"></span>Pinned: '
+              + fmtTime(ph * state.P) + "</li>";
+          });
+          $("legend1").innerHTML = l1;
+
+          $("legend2").innerHTML =
+            '<li><span class="sw" style="--c:var(--text)"></span>Surface</li>'
+            + '<li><span class="sw" style="--c:var(--c-probe)"></span>Probe depth</li>'
+        }
+
+        function stat(cls, k, v, n) {
+          return '<div class="stat ' + cls + '"><div class="k">' + k + '</div><div class="v">' + v
+            + '</div><div class="n">' + n + "</div></div>";
+        }
+
+        function renderReadouts() {
+          const m = model();
+          const zp = state.pd * m.d;
+          const ampP = m.A * Math.exp(-state.pd);
+          const lag = state.pd / m.w;
+
+          let html = "";
+          html += stat("", "Skin depth <i>d</i>", fmtDepth(m.d),
+            "Amplitude falls to 37% (1/e) at this depth. <i>d</i> = √(κ<i>P</i>/π)");
+          html += stat("", "Cycle reverses at π<i>d</i>", fmtDepth(Math.PI * m.d),
+            "Half a cycle behind the surface, with only " + fmtNum(100 * Math.exp(-Math.PI), 2) + "% of the amplitude left.");
+          html += stat("", "Below 4.6<i>d</i>", fmtDepth(Math.log(100) * m.d),
+            "The cycle is under 1% of its surface amplitude (" + fmtNum(m.A * 0.01, 2) + " °C here).");
+          html += stat("probe", "Probe: amplitude", fmtNum(ampP, 3) + " °C",
+            fmtNum(100 * Math.exp(-state.pd), 3) + "% of the surface amplitude, at " + fmtDepth(zp) + ".");
+          html += stat("probe", "Probe: time lag", state.pd > 0.005 ? fmtTime(lag) : "none",
+            "Delay behind the surface cycle (" + fmtNum(state.pd / (2 * Math.PI), 2) + " of a cycle).");
+          html += stat("probe", "Geotherm at the probe", fmtNum(m.T0 + m.G * zp, 4) + " °C",
+            "Mean temperature there: T₀ + <i>G</i>·<i>z</i>.");
+          $("stats").innerHTML = html;
+
+          // Table of reference cycles at the current diffusivity
+          const kappa = state.kappa * 1e-6;
+          const rows = [
+            ["Your setting", state.P, true],
+            ["Daily", 86400, false],
+            ["Annual", YEAR, false],
+            ["41 kyr", 41000 * YEAR, false],
+            ["100 kyr", 100000 * YEAR, false],
+          ];
+          $("rows").innerHTML = rows.map(([name, P, cur]) => {
+            const d = Math.sqrt(kappa * P / Math.PI);
+            return '<tr' + (cur ? ' class="current"' : "") + "><td>" + name + "</td><td>" + fmtTime(P)
+              + "</td><td>" + fmtDepth(d) + "</td><td>" + fmtDepth(Math.log(100) * d) + "</td></tr>";
+          }).join("");
+        }
+
+        function renderAll() {
+          const m = model();
+          buildFig1(m);
+          buildFig2(m);
+          renderLegends();
+          renderReadouts();
+
+          const sub = state.subtract ? " (deviation from the geotherm)" : "";
+          $("cap1").textContent = "Temperature vs depth" + sub;
+          $("cap2").textContent = "Temperature change over two cycles: surface and probe depth";
+          $("fig1").setAttribute("aria-label",
+            "Temperature versus depth. Skin depth " + fmtDepth(m.d) + "; the plot reaches " + fmtDepth(m.zmax) + ".");
+          $("fig2").setAttribute("aria-label",
+            "Temperature change over two cycles at the surface and at a probe depth. Period " + fmtTime(m.P) + ".");
+          $("pin").disabled = false;
+          renderFrame();
+        }
+
+        /* ---------- Reading the inputs ---------- */
+
+        function num(id) { return parseFloat($(id).value); }
+
+        function readInputs() {
+          const pv = num("period"), A = num("amp"), T0 = num("t0"), G = num("grad"), k = num("kappa");
+          const checks = [
+            ["period", pv > 0, "Period must be greater than zero."],
+            ["amp", A >= 0, "Amplitude cannot be negative."],
+            ["t0", Number.isFinite(T0), "Mean surface temperature must be a number."],
+            ["grad", Number.isFinite(G), "Gradient must be a number."],
+            ["kappa", k > 0, "Diffusivity must be greater than zero."],
+          ];
+          let msg = "";
+          checks.forEach(([id, ok, text]) => {
+            $(id).classList.toggle("bad", !ok);
+            $(id).setAttribute("aria-invalid", ok ? "false" : "true");
+            if (!ok && !msg) msg = text;
+          });
+          $("form-msg").hidden = !msg;
+          $("form-msg").textContent = msg;
+          if (msg) return;                     // keep showing the last good result
+
+          state.P = pv * UNIT_S[$("unit").value];
+          state.A = A; state.T0 = T0; state.G = G; state.kappa = k;
+          state.rangeD = parseFloat($("range").value);
+          state.subtract = $("subtract").checked;
+          state.pd = Math.min(state.pd, state.rangeD);
+          syncProbeSlider();
+          renderAll();
+        }
+
+        function syncProbeSlider() {
+          $("probe").value = Math.round(state.pd / state.rangeD * 1000);
+        }
+
+        function setPreset(key) {
+          const p = PRESETS[key];
+          $("preset-blurb").textContent = p.blurb;
+          if (key === "custom") return;
+          $("period").value = p.value;
+          $("unit").value = p.unit;
+          $("amp").value = p.amp;
+        }
+
+        document.querySelectorAll('input[name="preset"]').forEach((radio) => {
+          radio.addEventListener("change", () => {
+            if (!radio.checked) return;
+            setPreset(radio.value);
+            readInputs();
+          });
+        });
+
+        function toCustom() {
+          const custom = document.querySelector('input[name="preset"][value="custom"]');
+          if (!custom.checked) { custom.checked = true; $("preset-blurb").textContent = PRESETS.custom.blurb; }
+        }
+
+        ["period", "unit"].forEach((id) => $(id).addEventListener("input", () => { toCustom(); readInputs(); }));
+        ["amp", "t0", "grad", "kappa", "range", "subtract"].forEach((id) => $(id).addEventListener("input", readInputs));
+        $("form").addEventListener("submit", (e) => e.preventDefault());
+
+        /* ---------- Explore controls ---------- */
+
+        $("phase").addEventListener("input", () => {
+          setPlaying(false);
+          state.phase = (parseInt($("phase").value, 10) / 1000) % 1;
+          renderFrame();
+        });
+
+        $("probe").addEventListener("input", () => {
+          state.pd = parseInt($("probe").value, 10) / 1000 * state.rangeD;
+          renderReadouts();
+          renderFrame();
+        });
+
+        $("pin").addEventListener("click", () => {
+          if (state.pins.length >= PIN_COLOURS.length) state.pins.shift();
+          state.pins.push(state.phase);
+          renderLegends();
+          renderFrame();
+        });
+
+        $("unpin").addEventListener("click", () => {
+          state.pins = [];
+          renderLegends();
+          renderFrame();
+        });
+
+        /* ---------- Playback ---------- */
+
+        let lastTs = null;
+
+        function tick(ts) {
+          if (!state.playing) { lastTs = null; return; }
+          if (lastTs !== null) {
+            const dt = Math.min((ts - lastTs) / 1000, 0.1);    // ignore long gaps (hidden tab)
+            state.phase = (state.phase + dt / CYCLE_SECONDS) % 1;
+            $("phase").value = Math.round(state.phase * 1000);
+            renderFrame();
+          }
+          lastTs = ts;
+          requestAnimationFrame(tick);
+        }
+
+        function setPlaying(on) {
+          if (on === state.playing) return;
+          state.playing = on;
+          $("play").textContent = on ? "Pause" : "Play";
+          if (on) { lastTs = null; requestAnimationFrame(tick); }
+        }
+
+        $("play").addEventListener("click", () => setPlaying(!state.playing));
+
+        /* ---------- Start ---------- */
+
+        setPreset("annual");
+        syncProbeSlider();
+        $("play").textContent = state.playing ? "Pause" : "Play";
+        readInputs();
+        if (state.playing) requestAnimationFrame(tick);
+      })();
+    </script>
+  </body>
+</html>

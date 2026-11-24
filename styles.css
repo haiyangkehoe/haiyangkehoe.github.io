@@ -267,7 +267,7 @@ a.card:hover {
   nav a {
     display: none;
   }
-  #aboutme, #publications, #cv {
+  #aboutme, #publications, #cv, #teaching, #outreach {
     width: 100%
   }
   .headshot-wrap {
