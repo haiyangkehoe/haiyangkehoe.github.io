@@ -718,6 +718,167 @@
         white-space: nowrap;
       }
 
+      /* Square root drawn so the bar extends over the radicand; the radical sign is an inline SVG so it
+         looks the same in every font and takes the text colour. */
+      .sqrt {
+        display: inline-block;
+        position: relative;
+        padding-left: 0.8em;
+        line-height: 1.1;
+        white-space: nowrap;
+      }
+
+      .sqrt > svg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 0.8em;
+        height: 100%;
+        overflow: visible;
+      }
+
+      .sqrt > svg path {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.1px;
+        stroke-linejoin: round;
+        stroke-linecap: butt;
+        vector-effect: non-scaling-stroke;
+      }
+
+      .sqrt > .rad {
+        display: block;
+        border-top: 1px solid currentColor;
+        padding: 0 0.15em 0 0.05em;
+      }
+
+      /* radicand with a superscript needs headroom under the bar */
+      .sqrt > .rad.tall {
+        padding-top: 0.3em;
+      }
+
+      /* ----- Derivation ----- */
+
+      details + details {
+        margin-top: 12px;
+      }
+
+      .deriv {
+        margin-top: 10px;
+        color: var(--text);
+      }
+
+      .deriv p {
+        margin: 6px 0;
+      }
+
+      .deriv ol {
+        margin: 12px 0 0;
+        padding-left: 22px;
+      }
+
+      .deriv li {
+        margin-bottom: 22px;
+      }
+
+      .deriv li > b {
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      /* the bulleted list inside the last step: tighter than the numbered steps */
+      .deriv ul.plain {
+        margin-top: 6px;
+      }
+
+      .deriv ul.plain li {
+        margin-bottom: 8px;
+      }
+
+      .deriv ul.plain li > b {
+        display: inline;
+      }
+
+      /* Equation with a number on the right; the equation itself scrolls on narrow screens */
+      .eq.numbered {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        overflow-x: visible;
+      }
+
+      .eq-body {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-x: auto;
+      }
+
+      .eq-num {
+        flex: none;
+        color: var(--muted);
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size: 14px;
+      }
+
+      /* Stacked fraction, used for derivatives such as dT/dt */
+      .frac {
+        display: inline-flex;
+        flex-direction: column;
+        vertical-align: middle;
+        text-align: center;
+        line-height: 1.3;
+        margin: 0 2px;
+      }
+
+      .frac > span {
+        padding: 0 4px;
+      }
+
+      .frac > span:first-child {
+        border-bottom: 1px solid currentColor;
+      }
+
+      br.m {
+        display: none;
+      }
+
+      @media (max-width: 710px) {
+        br.m {
+          display: inline;
+        }
+
+        /* keep the number on the equation's row, vertically centred, and make room for it */
+        .deriv .eq {
+          font-size: 15px;
+        }
+
+        .eq.numbered {
+          gap: 8px;
+        }
+
+        .eq-num {
+          font-size: 13px;
+        }
+      }
+
+
+      .callout {
+        margin: 10px 0 0;
+        padding: 10px 14px;
+        background: var(--bg);
+        border-left: 3px solid var(--accent);
+        border-radius: 0 8px 8px 0;
+      }
+
+      .callout p:first-child {
+        margin-top: 0;
+      }
+
+      .callout p:last-child {
+        margin-bottom: 0;
+      }
+
       ul.plain {
         margin: 8px 0 0;
         padding-left: 20px;
@@ -893,7 +1054,7 @@
       </div>
 
       <div class="card">
-        <h2>How deep does each cycle reach? (for this &kappa;)</h2>
+        <h2>How deep does each cycle reach?</h2>
         <div class="scroll">
           <table>
             <thead>
@@ -908,8 +1069,7 @@
           </table>
         </div>
         <p class="hint" style="margin:10px 0 0">
-          At the skin depth <i>d</i> the amplitude has fallen to 37% (1/e) of its surface value.
-          Below the 1% depth (4.6&nbsp;<i>d</i>) it is under 1%.
+          At the skin depth <i>d</i> the amplitude has fallen to 36.8% (1/e) of the surface amplitude.
         </p>
       </div>
 
@@ -921,14 +1081,14 @@
             <b>Daily vs annual.</b> With &kappa; fixed, switch between Daily and Annual. By what factor
             does the skin depth change? Is it the same factor as the ratio of the periods?
             <details><summary>Hint</summary>
-              <i>d</i> grows with the square root of the period. A year is about 365 days, so <i>d</i> grows by roughly &radic;365 &asymp; 19.
+              <i>d</i> grows with the square root of the period. A year is about 365 days, so <i>d</i> grows by roughly <span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad">365</span></span> &asymp; 19.
             </details>
           </li>
           <li>
             <b>Doubling the period.</b> Choose Custom, then double the period, then quadruple it.
             What happens to <i>d</i>?
             <details><summary>Hint</summary>
-              Doubling the period multiplies <i>d</i> by &radic;2 &asymp; 1.41; quadrupling it doubles <i>d</i>.
+              Doubling the period multiplies <i>d</i> by <span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad">2</span></span> &asymp; 1.41; quadrupling it doubles <i>d</i>.
             </details>
           </li>
           <li>
@@ -943,7 +1103,7 @@
             <b>Does the gradient matter?</b> Change the geothermal gradient. Which of the key numbers
             change, and which do not? Why?
             <details><summary>Hint</summary>
-              None of the skin depth, amplitude or lag numbers change. Heat conduction is linear, so the
+              None of the skin depth, amplitude, or lag numbers change. Heat conduction is linear, so the
               periodic part and the steady geotherm simply add.
             </details>
           </li>
@@ -978,7 +1138,7 @@
           </p>
           <div class="eq">
             T(<i>z</i>,&thinsp;<i>t</i>) = T<sub>0</sub> + <i>G</i>&thinsp;<i>z</i> + A&thinsp;e<sup>&minus;<i>z</i>/<i>d</i></sup>&thinsp;cos(2&pi;<i>t</i>/<i>P</i> &minus; <i>z</i>/<i>d</i>),
-            &emsp; <i>d</i> = &radic;(&kappa;<i>P</i>/&pi;)
+            &emsp; <i>d</i> = <span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad">&kappa;<i>P</i>/&pi;</span></span>
           </div>
           <ul class="plain">
             <li>T<sub>0</sub>: mean surface temperature. <i>G</i>: geothermal gradient. A: surface amplitude. <i>P</i>: period.</li>
@@ -987,15 +1147,154 @@
           </ul>
           <p>Assumptions:</p>
           <ul class="plain">
-            <li>Heat moves by conduction only (no groundwater flow, no freezing or thawing) and &kappa; is the same everywhere.</li>
-            <li>The surface temperature is a pure sine wave. Real daily, seasonal and glacial cycles are not, but a real cycle can be built from several sine waves of different periods.</li>
+            <li>Heat moves by conduction only and &kappa; is the same everywhere.</li>
+            <li>The surface temperature is a sine wave (real daily, seasonal and glacial cycles are not, but a real cycle can be built from several sine waves of different periods).</li>
             <li>The gradient is constant with depth (no radiogenic heat production, no layering).</li>
-            <li>Preset amplitudes are illustrative, not measurements from a particular site. Ground-surface temperature is not the same as air temperature (snow, vegetation and soil moisture all matter).</li>
+            <li>Ground-surface temperature is not the same as air temperature (snow, vegetation, and soil moisture may change their relationship).</li>
           </ul>
           <p>
-            This is a classical result of heat-conduction theory; see, for example,
-            Turcotte &amp; Schubert, <i>Geodynamics</i>, chapter 4.
+            See:
+            Turcotte &amp; Schubert, <i>Geodynamics</i>, Chapter 4 or
+            Fowler, <i>The Solid Earth</i>, Chapter 7.
           </p>
+        </details>
+        <details>
+          <summary>Derivation</summary>
+          <div class="deriv">
+            <p>
+              We solve the one-dimensional diffusion equation in a half-space with harmonic surface forcing,
+              in the periodic steady state. Complex notation reduces the problem to an ODE in <i>z</i>.
+            </p>
+
+            <ol>
+              <li>
+                <b>Diffusion equation</b>
+                <p>
+                  Energy conservation for a slab between <i>z</i> and <i>z</i> + d<i>z</i>, with density &rho;, specific heat
+                  capacity <i>c</i> and downward heat flux <i>q</i>(<i>z</i>,&thinsp;<i>t</i>), gives
+                </p>
+                <div class="eq">&rho;<i>c</i>&thinsp;d<i>z</i>&ensp;<span class="frac"><span>&part;<i>T</i></span><span>&part;<i>t</i></span></span>&ensp;=&ensp;<i>q</i>(<i>z</i>) &minus; <i>q</i>(<i>z</i> + d<i>z</i>)<br class="m">&ensp;=&ensp;&minus;<span class="frac"><span>&part;<i>q</i></span><span>&part;<i>z</i></span></span>&thinsp;d<i>z</i></div>
+                <p>Fourier&rsquo;s law, with thermal conductivity <i>k</i>, gives</p>
+                <div class="eq"><i>q</i> = &minus;<i>k</i>&thinsp;<span class="frac"><span>&part;<i>T</i></span><span>&part;<i>z</i></span></span></div>
+                <p>
+                  Substituting, with <i>k</i>, &rho; and <i>c</i> uniform, yields the diffusion equation with thermal
+                  diffusivity &kappa; = <i>k</i>/(&rho;<i>c</i>):
+                </p>
+                <div class="eq numbered"><span class="eq-body"><span class="frac"><span>&part;<i>T</i></span><span>&part;<i>t</i></span></span>&ensp;=&ensp;&kappa;&thinsp;<span class="frac"><span>&part;&sup2;<i>T</i></span><span>&part;<i>z</i>&sup2;</span></span>,&emsp; <br class="m">&kappa; = <i>k</i>/(&rho;<i>c</i>)</span><span class="eq-num">(1)</span></div>
+                <p>
+                  The steady geotherm T<sub>0</sub> + <i>G</i><i>z</i> carries a uniform upward heat flux <i>k</i><i>G</i>, the surface heat flow.
+                </p>
+              </li>
+
+              <li>
+                <b>Boundary conditions</b>
+                <p>
+                  At the surface the temperature is prescribed as a harmonic oscillation about its mean T<sub>0</sub>:
+                </p>
+                <div class="eq numbered"><span class="eq-body">T(0,&thinsp;<i>t</i>) = T<sub>0</sub> + A&thinsp;cos&thinsp;&omega;<i>t</i>,&emsp; <br class="m">&omega; = 2&pi;/<i>P</i></span><span class="eq-num">(2)</span></div>
+                <p>
+                  At depth the solution must approach the undisturbed geotherm T<sub>0</sub> + <i>G</i><i>z</i>:
+                </p>
+                <div class="eq numbered"><span class="eq-body">T(<i>z</i>,&thinsp;<i>t</i>) &rarr; (T<sub>0</sub> + <i>G</i>&thinsp;<i>z</i>) &emsp;<br class="m">as <i>z</i> &rarr; &infin;</span><span class="eq-num">(3)</span></div>
+                <p>
+                  <i>G</i> is set by the heat flux from the deep interior, which the surface forcing does not alter.
+                  No initial condition is imposed: we seek the periodic steady state, which the solution approaches
+                  once the transient from the initial condition has decayed.
+                </p>
+              </li>
+
+              <li>
+                <b>Subtracting the geotherm</b>
+                <p>
+                  The geotherm is independent of <i>t</i> and linear in <i>z</i>, so it solves (1) on its own. Write
+                </p>
+                <div class="eq">T(<i>z</i>,&thinsp;<i>t</i>) = T<sub>0</sub> + <i>G</i>&thinsp;<i>z</i> + &theta;(<i>z</i>,&thinsp;<i>t</i>)</div>
+                <p>
+                  By linearity, &theta; also satisfies (1). At <i>z</i> = 0 the geotherm reduces to T<sub>0</sub>, so (2) becomes
+                  &theta;(0,&thinsp;<i>t</i>) = A&thinsp;cos&thinsp;&omega;<i>t</i>, and (3) becomes &theta; &rarr; 0:
+                </p>
+                <div class="eq numbered"><span class="eq-body"><span class="frac"><span>&part;&theta;</span><span>&part;<i>t</i></span></span>&ensp;=&ensp;&kappa;&thinsp;<span class="frac"><span>&part;&sup2;&theta;</span><span>&part;<i>z</i>&sup2;</span></span><br>&theta;(0,&thinsp;<i>t</i>) = A&thinsp;cos&thinsp;&omega;<i>t</i><br>&theta; &rarr; 0 as <i>z</i> &rarr; &infin;</span><span class="eq-num">(4)</span></div>
+                <p>
+                  &theta; is independent of <i>G</i> and T<sub>0</sub>. In other words, the oscillation is independent of the
+                  background gradient.
+                </p>
+              </li>
+
+              <li>
+                <b>Harmonic ansatz</b>
+                <p>
+                  Write the forcing as A&thinsp;cos&thinsp;&omega;<i>t</i> = Re(A&thinsp;e<sup>i&omega;<i>t</i></sup>). Since (4) is
+                  linear with time-independent coefficients, the periodic steady state responds at the forcing
+                  frequency:
+                </p>
+                <div class="eq">&theta;(<i>z</i>,&thinsp;<i>t</i>) = Re[&thinsp;&Theta;(<i>z</i>)&thinsp;e<sup>i&omega;<i>t</i></sup>&thinsp;]</div>
+                <p>
+                  where the modulus and argument of the complex amplitude &Theta;(<i>z</i>) give the amplitude and
+                  phase at depth <i>z</i>. Substituting into (4) and cancelling e<sup>i&omega;<i>t</i></sup> gives
+                </p>
+                <div class="eq numbered"><span class="eq-body">i&omega;&thinsp;&Theta; = &kappa;&thinsp;<span class="frac"><span>d&sup2;&Theta;</span><span>d<i>z</i>&sup2;</span></span><br>&rArr;&emsp;<span class="frac"><span>d&sup2;&Theta;</span><span>d<i>z</i>&sup2;</span></span> = &beta;&sup2;&thinsp;&Theta;,&emsp; <br class="m">&beta;&sup2; = <span class="frac"><span>i&omega;</span><span>&kappa;</span></span></span><span class="eq-num">(5)</span></div>
+              </li>
+
+              <li>
+                <b>Solving for the depth dependence</b>
+                <p>The general solution of (5) is</p>
+                <div class="eq">&Theta;(<i>z</i>) = C<sub>1</sub>&thinsp;e<sup>&beta;<i>z</i></sup> + C<sub>2</sub>&thinsp;e<sup>&minus;&beta;<i>z</i></sup></div>
+                <p>
+                  Using the principal square root of i,
+                </p>
+                <div class="eq"><span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad">i</span></span> = <span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad tall">e<sup>i&pi;/2</sup></span></span> = e<sup>i&pi;/4</sup> = <span class="frac"><span>1 + i</span><span><span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad">2</span></span></span></span></div>
+                <p>
+                  the root of &beta;&sup2; = i&omega;/&kappa; with positive real part is
+                </p>
+                <div class="eq numbered"><span class="eq-body">&beta; = (1 + i)&thinsp;<span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad">&omega;/2&kappa;</span></span><br class="m"> = <span class="frac"><span>1 + i</span><span><i>d</i></span></span>,&emsp;<br class="m"><i>d</i> = <span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad">2&kappa;/&omega;</span></span></span><span class="eq-num">(6)</span></div>
+                <p>
+                  Since Re&thinsp;&beta; = 1/<i>d</i> &gt; 0, the e<sup>&beta;<i>z</i></sup> term grows without bound and
+                  violates (3), so C<sub>1</sub> = 0. The surface condition &Theta;(0) = A fixes C<sub>2</sub> = A:
+                </p>
+                <div class="eq numbered"><span class="eq-body">&Theta;(<i>z</i>) = A&thinsp;e<sup>&minus;&beta;<i>z</i></sup><br class="m"> = A&thinsp;e<sup>&minus;<i>z</i>/<i>d</i></sup>&thinsp;e<sup>&minus;i<i>z</i>/<i>d</i></sup></span><span class="eq-num">(7)</span></div>
+              </li>
+
+              <li>
+                <b>Real part</b>
+                <p>Taking the real part of &Theta;&thinsp;e<sup>i&omega;<i>t</i></sup> gives</p>
+                <div class="eq">&theta; = Re[&thinsp;A&thinsp;e<sup>&minus;<i>z</i>/<i>d</i></sup>&thinsp;e<sup>i(&omega;<i>t</i> &minus; <i>z</i>/<i>d</i>)</sup>&thinsp;]<br class="m"> = A&thinsp;e<sup>&minus;<i>z</i>/<i>d</i></sup>&thinsp;cos(&omega;<i>t</i> &minus; <i>z</i>/<i>d</i>)</div>
+                <p>
+                  Restoring the geotherm and writing <i>d</i> in terms of the period (&omega; = 2&pi;/<i>P</i>) gives the
+                  result used throughout this page:
+                </p>
+                <div class="eq numbered"><span class="eq-body">T(<i>z</i>,&thinsp;<i>t</i>) = T<sub>0</sub> + <i>G</i>&thinsp;<i>z</i><br class="m"> + A&thinsp;e<sup>&minus;<i>z</i>/<i>d</i></sup>&thinsp;cos(2&pi;<i>t</i>/<i>P</i> &minus; <i>z</i>/<i>d</i>),<br><i>d</i> = <span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad">2&kappa;/&omega;</span></span> = <span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad">&kappa;<i>P</i>/&pi;</span></span></span><span class="eq-num">(8)</span></div>
+                <div class="callout">
+                  <p>
+                    <b>Check.</b> With &phi; = &omega;<i>t</i> &minus; <i>z</i>/<i>d</i>, differentiation gives
+                    &part;&theta;/&part;<i>t</i> = &minus;&omega;A&thinsp;e<sup>&minus;<i>z</i>/<i>d</i></sup>&thinsp;sin&thinsp;&phi; and
+                    &part;&sup2;&theta;/&part;<i>z</i>&sup2; = &minus;(2/<i>d</i>&sup2;)&thinsp;A&thinsp;e<sup>&minus;<i>z</i>/<i>d</i></sup>&thinsp;sin&thinsp;&phi;.
+                    Since <i>d</i>&sup2; = 2&kappa;/&omega;, &kappa;&thinsp;&part;&sup2;&theta;/&part;<i>z</i>&sup2; = &part;&theta;/&part;<i>t</i>, so (4) holds.
+                    Also &theta;(0,&thinsp;<i>t</i>) = A&thinsp;cos&thinsp;&omega;<i>t</i>, and &theta; &rarr; 0 as <i>z</i> &rarr; &infin;.
+                  </p>
+                </div>
+              </li>
+
+              <li>
+                <b>Properties of the solution</b>
+                <ul class="plain">
+                  <li>
+                    <b>Attenuation.</b> The amplitude decays as e<sup>&minus;<i>z</i>/<i>d</i></sup>: it falls to 1/e at the skin depth
+                    <i>d</i> and to 1% at <i>z</i> = <i>d</i>&thinsp;ln&thinsp;100 &asymp; 4.6&thinsp;<i>d</i>. This sets the shaded band in the
+                    temperature&ndash;depth figure.
+                  </li>
+                  <li>
+                    <b>Phase.</b> The phase lag is <i>z</i>/<i>d</i> radians, a delay of (<i>z</i>/<i>d</i>)&thinsp;<i>P</i>/2&pi;, which is the lag marked in
+                    the time-series figure. The wave propagates downward with phase speed &omega;<i>d</i> and wavelength 2&pi;<i>d</i>. At <i>z</i> = &pi;<i>d</i>
+                    it is perfectly out of phase with the surface, with e<sup>&minus;&pi;</sup> &asymp; 4.3% of the surface amplitude.
+                  </li>
+                  <li>
+                    <b>Scaling.</b> <i>d</i> = <span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad">&kappa;<i>P</i>/&pi;</span></span> &prop; <span class="sqrt"><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg><span class="rad"><i>P</i></span></span>, the diffusive scaling <i>d</i>&sup2; &sim; &kappa;<i>P</i>.
+                    By linearity, any periodic forcing is a Fourier sum of such terms, each with its own <i>d</i>.
+                  </li>
+                </ul>
+              </li>
+            </ol>
+          </div>
         </details>
       </div>
 
@@ -1043,22 +1342,22 @@
         const PRESETS = {
           daily: {
             value: 1, unit: "day", amp: 10,
-            blurb: "The day–night cycle of surface temperature. Amplitude about ±10 °C (illustrative).",
+            blurb: "The day–night cycle of surface temperature. Amplitude about ±10 °C.",
           },
           annual: {
             value: 1, unit: "year", amp: 10,
-            blurb: "The seasonal cycle of surface temperature at mid-latitudes. Amplitude about ±10 °C (illustrative).",
+            blurb: "The seasonal cycle of surface temperature at mid-latitudes. Amplitude about ±10 °C.",
           },
           obliq: {
             value: 41, unit: "kyr", amp: 2,
-            blurb: "The cycle of surface temperature matching the period of Earth's axial tilt (obliquity). Amplitude about ±2 °C (illustrative).",
+            blurb: "The cycle of surface temperature matching the period of Earth's axial tilt (obliquity). Amplitude about ±2 °C.",
           },
           ecc: {
             value: 100, unit: "kyr", amp: 5,
-            blurb: "The glacial–interglacial cycle of surface temperature idealized as a sine wave. Amplitude about ±5 °C (illustrative).",
+            blurb: "The glacial–interglacial cycle of surface temperature idealized as a sine wave. Amplitude about ±5 °C.",
           },
           custom: {
-            blurb: "Custom cycle. Set any period, unit and amplitude in the fields below.",
+            blurb: "Custom cycle. Set any period, amplitude, and constants in the fields below.",
           },
         };
 
@@ -1245,7 +1544,7 @@
             svg += '<text x="' + (ML - 9) + '" y="' + y + '" text-anchor="end" dominant-baseline="central">' + v.toFixed(yd) + "</text>";
           });
           svg += '<text x="' + (ML + PW / 2) + '" y="' + (H - 10) + '" text-anchor="middle">'
-            + (state.subtract ? "Temperature minus geotherm (°C)" : "Temperature (°C)") + "</text>";
+            + (state.subtract ? "Temperature deviation from geotherm (°C)" : "Temperature (°C)") + "</text>";
           svg += '<text transform="translate(16 ' + (MT + PH / 2) + ') rotate(-90)" text-anchor="middle">Depth (' + unit.name + ")</text>";
           svg += "</svg>";
 
@@ -1295,7 +1594,7 @@
             svg += '<text x="' + (ML - 9) + '" y="' + y + '" text-anchor="end" dominant-baseline="central">' + v.toFixed(yd) + "</text>";
           });
           svg += '<text x="' + (ML + PW / 2) + '" y="' + (H - 10) + '" text-anchor="middle">Time (' + tu.name + ")</text>";
-          svg += '<text transform="translate(16 ' + (MT + PH / 2) + ') rotate(-90)" text-anchor="middle">Deviation from geotherm (°C)</text>';
+          svg += '<text transform="translate(16 ' + (MT + PH / 2) + ') rotate(-90)" text-anchor="middle">Temperature deviation from geotherm (°C)</text>';
           svg += "</svg>";
 
           $("fig2").innerHTML = svg;
@@ -1380,7 +1679,7 @@
         /* ---------- Readouts, table, legends (run on parameter or probe changes) ---------- */
 
         function renderLegends() {
-          const bgLabel = state.subtract ? "Geotherm (zero line)" : "Geotherm";
+          const bgLabel = state.subtract ? "Geotherm" : "Geotherm";
           let l1 = '<li><span class="sw" style="--c:var(--c-cur)"></span>Profile at the chosen time</li>'
             + '<li><span class="sw band" style="--c:var(--c-cur)"></span>Range reached over a full cycle</li>'
             + '<li><span class="sw dashed" style="--c:var(--muted)"></span>' + bgLabel + "</li>"
@@ -1401,6 +1700,9 @@
             + '</div><div class="n">' + n + "</div></div>";
         }
 
+        // square root with the bar over its contents (same markup/CSS as in the static HTML)
+        const SQRT = (x) => '<span class="sqrt">' + '<svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.6 12 L2.3 10.7 L4.9 19.2 L9.7 0.6"/></svg>' + '<span class="rad">' + x + "</span></span>";
+
         function renderReadouts() {
           const m = model();
           const zp = state.pd * m.d;
@@ -1409,17 +1711,17 @@
 
           let html = "";
           html += stat("", "Skin depth <i>d</i>", fmtDepth(m.d),
-            "Amplitude falls to 37% (1/e) at this depth. <i>d</i> = √(κ<i>P</i>/π)");
-          html += stat("", "Cycle reverses at π<i>d</i>", fmtDepth(Math.PI * m.d),
-            "Half a cycle behind the surface, with only " + fmtNum(100 * Math.exp(-Math.PI), 2) + "% of the amplitude left.");
-          html += stat("", "Below 4.6<i>d</i>", fmtDepth(Math.log(100) * m.d),
-            "The cycle is under 1% of its surface amplitude (" + fmtNum(m.A * 0.01, 2) + " °C here).");
+            "Amplitude falls to 36.8% (1/e) at this depth. <i>d</i> = " + SQRT("κ<i>P</i>/π"));
+          html += stat("", "Cycle reverses at depth π<i>d</i>", fmtDepth(Math.PI * m.d),
+            "Half a cycle behind the surface, with only " + fmtNum(100 * Math.exp(-Math.PI), 2) + "% of the amplitude.");
+          html += stat("", "Below depth 4.6<i>d</i>", fmtDepth(Math.log(100) * m.d),
+            "The cycle is under 1% of its surface amplitude.");
           html += stat("probe", "Probe: amplitude", fmtNum(ampP, 3) + " °C",
             fmtNum(100 * Math.exp(-state.pd), 3) + "% of the surface amplitude, at " + fmtDepth(zp) + ".");
           html += stat("probe", "Probe: time lag", state.pd > 0.005 ? fmtTime(lag) : "none",
             "Delay behind the surface cycle (" + fmtNum(state.pd / (2 * Math.PI), 2) + " of a cycle).");
-          html += stat("probe", "Geotherm at the probe", fmtNum(m.T0 + m.G * zp, 4) + " °C",
-            "Mean temperature there: T₀ + <i>G</i>·<i>z</i>.");
+          html += stat("probe", "Probe: Mean temperature", fmtNum(m.T0 + m.G * zp, 4) + " °C",
+            "Mean temperature: T₀ + <i>G</i>·<i>z</i>.");
           $("stats").innerHTML = html;
 
           // Table of reference cycles at the current diffusivity
@@ -1447,7 +1749,7 @@
 
           const sub = state.subtract ? " (deviation from the geotherm)" : "";
           $("cap1").textContent = "Temperature vs depth" + sub;
-          $("cap2").textContent = "Temperature change over two cycles: surface and probe depth";
+          $("cap2").textContent = "Surface and probe temperature over two cycles";
           $("fig1").setAttribute("aria-label",
             "Temperature versus depth. Skin depth " + fmtDepth(m.d) + "; the plot reaches " + fmtDepth(m.zmax) + ".");
           $("fig2").setAttribute("aria-label",
